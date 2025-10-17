@@ -1,4 +1,3 @@
-import React from 'react';
 import { Manga } from '@/types/manga.types';
 import { MangaCard } from './MangaCard';
 import { cn } from '@/utils/cn';
