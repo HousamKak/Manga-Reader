@@ -27,8 +27,8 @@ export function ChapterSelector({
 
         <div className="space-y-2 mt-4">
           {chapters.map((chapter) => {
-            // currentChapterId is now the chapter number from URL
-            const isActive = currentChapterId && chapter.chapterNumber === parseInt(currentChapterId);
+            const isActive =
+              currentChapterId && chapter.chapterNumber === parseInt(currentChapterId, 10);
             const progress = chapter.progress || 0;
 
             return (
@@ -60,13 +60,12 @@ export function ChapterSelector({
                     <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                       <span>{chapter.totalPages || '?'} pages</span>
                       {progress > 0 && (
-                        <span className="text-primary">• {Math.round(progress)}% read</span>
+                        <span className="text-primary">- {Math.round(progress)}% read</span>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Progress Bar */}
                 {progress > 0 && (
                   <div className="w-full bg-muted h-1 rounded-full mt-2 overflow-hidden">
                     <div
