@@ -227,7 +227,7 @@ export function ReaderToolbar({
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 w-full justify-end sm:w-auto sm:justify-end ml-auto sm:ml-0">
           <Button
             variant="ghost"
             size="sm"
