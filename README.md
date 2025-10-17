@@ -1,6 +1,6 @@
 # Manga Reader
 
-A modern, ad-free manga reader web application built with React, TypeScript, and Vite. Read your legally purchased manga with an intuitive interface, smooth scrolling, and comprehensive reading features.
+A modern, ad-free manga reader web application built with React, TypeScript, and Vite. Read manga with an intuitive interface, smooth scrolling, and comprehensive reading features.
 
 ## Features
 
