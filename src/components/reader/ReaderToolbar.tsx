@@ -122,7 +122,7 @@ export function ReaderToolbar({
         </div>
 
         {/* Middle Section - Chapter and Page Controls */}
-        <div className="flex flex-1 flex-wrap items-center justify-center gap-2 sm:flex-nowrap sm:justify-center sm:gap-3 min-w-[240px]">
+        <div className="flex flex-1 flex-wrap items-center justify-center gap-2 sm:flex-nowrap sm:justify-center sm:gap-3 min-w-[220px]">
           {/* Previous Chapter Button */}
           <Button
             variant="ghost"
