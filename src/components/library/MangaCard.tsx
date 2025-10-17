@@ -19,7 +19,6 @@ export function MangaCard({ manga, onRead, onDelete, className }: MangaCardProps
 
   return (
     <Card className={cn('overflow-hidden hover:shadow-lg transition-shadow', className)}>
-      {/* Cover Image */}
       <div
         className="h-64 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center relative group"
         onClick={() => onRead(manga)}
@@ -39,7 +38,6 @@ export function MangaCard({ manga, onRead, onDelete, className }: MangaCardProps
           </div>
         )}
 
-        {/* Overlay on hover */}
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <Button variant="default" size="lg">
             <Play className="h-5 w-5 mr-2" />
@@ -47,7 +45,6 @@ export function MangaCard({ manga, onRead, onDelete, className }: MangaCardProps
           </Button>
         </div>
 
-        {/* Actions */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             variant="destructive"
@@ -62,7 +59,6 @@ export function MangaCard({ manga, onRead, onDelete, className }: MangaCardProps
         </div>
       </div>
 
-      {/* Content */}
       <CardContent className="p-4">
         <h3 className="font-semibold text-lg mb-2 line-clamp-2">{manga.title}</h3>
 
@@ -71,7 +67,7 @@ export function MangaCard({ manga, onRead, onDelete, className }: MangaCardProps
 
           {lastRead && progress && (
             <p className="text-primary">
-              Reading Chapter {progress.chapterNumber} • Page {lastRead.page}
+              Reading Chapter {progress.chapterNumber} - Page {lastRead.page}
             </p>
           )}
 
