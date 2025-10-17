@@ -6,16 +6,19 @@ interface MangaGridProps {
   manga: Manga[];
   onRead: (manga: Manga) => void;
   onDelete: (manga: Manga) => void;
+  onEdit: (manga: Manga) => void;
   className?: string;
 }
 
-export function MangaGrid({ manga, onRead, onDelete, className }: MangaGridProps) {
+export function MangaGrid({ manga, onRead, onDelete, onEdit, className }: MangaGridProps) {
   if (manga.length === 0) {
     return (
-      <div className="text-center py-16">
-        <p className="text-muted-foreground text-lg">No manga in your library</p>
-        <p className="text-sm text-muted-foreground mt-2">
-          Add a manga to get started
+      <div className="py-16 text-center">
+        <p className="font-display text-2xl uppercase tracking-[0.4em] text-stone-600">
+          No Tomes Inscribed
+        </p>
+        <p className="mt-2 text-xs uppercase tracking-[0.3em] text-stone-500">
+          Summon a new manuscript to begin your collection.
         </p>
       </div>
     );
@@ -29,7 +32,7 @@ export function MangaGrid({ manga, onRead, onDelete, className }: MangaGridProps
       )}
     >
       {manga.map((m) => (
-        <MangaCard key={m.id} manga={m} onRead={onRead} onDelete={onDelete} />
+        <MangaCard key={m.id} manga={m} onRead={onRead} onDelete={onDelete} onEdit={onEdit} />
       ))}
     </div>
   );

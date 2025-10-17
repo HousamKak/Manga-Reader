@@ -1,64 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:wght@400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --font-body: 'EB Garamond', 'Georgia', serif;
+    --font-display: 'Cinzel Decorative', 'EB Garamond', serif;
+    --parchment: 42 56% 90%;
+    --background: 42 60% 93%;
+    --foreground: 25 30% 18%;
+    --card: 40 45% 88%;
+    --card-foreground: 20 35% 16%;
+    --popover: 42 60% 93%;
+    --popover-foreground: 20 35% 16%;
+    --primary: 37 70% 45%;
+    --primary-foreground: 30 25% 95%;
+    --secondary: 30 40% 80%;
+    --secondary-foreground: 22 40% 20%;
+    --muted: 32 28% 82%;
+    --muted-foreground: 25 25% 40%;
+    --accent: 38 35% 85%;
+    --accent-foreground: 24 32% 24%;
+    --destructive: 2 74% 40%;
+    --destructive-foreground: 33 31% 94%;
+    --border: 30 35% 55%;
+    --input: 30 35% 65%;
+    --ring: 37 70% 45%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --background: 27 31% 12%;
+    --foreground: 40 45% 90%;
+    --card: 30 28% 20%;
+    --card-foreground: 40 45% 90%;
+    --popover: 30 28% 20%;
+    --popover-foreground: 40 45% 90%;
+    --primary: 37 70% 48%;
+    --primary-foreground: 27 31% 12%;
+    --secondary: 27 23% 28%;
+    --secondary-foreground: 40 45% 90%;
+    --muted: 27 23% 28%;
+    --muted-foreground: 35 30% 72%;
+    --accent: 29 25% 32%;
+    --accent-foreground: 40 45% 90%;
+    --destructive: 0 65% 40%;
+    --destructive-foreground: 44 47% 95%;
+    --border: 24 24% 38%;
+    --input: 24 24% 38%;
+    --ring: 37 70% 48%;
   }
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   * {
     @apply border-border;
   }
+
   body {
+    font-family: var(--font-body);
     @apply bg-background text-foreground;
+    background-image: radial-gradient(circle at 10% 20%, rgba(199, 178, 125, 0.18) 0, rgba(199, 178, 125, 0) 55%),
+      radial-gradient(circle at 90% 80%, rgba(171, 144, 95, 0.16) 0, rgba(171, 144, 95, 0) 50%);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  select,
+  textarea {
+    @apply border-2 border-stone-700 bg-[hsl(var(--parchment))] text-xs uppercase tracking-[0.25em] text-stone-800 shadow-inner shadow-stone-900/10 focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2 focus:ring-offset-stone-200;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    accent-color: hsl(var(--primary));
   }
 }
 
-/* Custom scrollbar */
+img {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.bg-library-pattern {
+  background-color: hsl(var(--background));
+  background-image: radial-gradient(circle at 10% 20%, rgba(199, 178, 125, 0.18) 0, rgba(199, 178, 125, 0) 55%),
+    radial-gradient(circle at 90% 80%, rgba(171, 144, 95, 0.16) 0, rgba(171, 144, 95, 0) 50%),
+    linear-gradient(90deg, rgba(110, 90, 60, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(110, 90, 60, 0.05) 1px, transparent 1px);
+  background-size: cover, cover, 24px 24px, 24px 24px;
+}
+
+button,
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -69,7 +116,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground));
+  background: hsl(var(--border));
   border-radius: 5px;
 }
 
@@ -77,34 +124,8 @@
   background: hsl(var(--primary));
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Image loading animation */
-img {
-  transition: opacity 0.3s ease-in-out;
-}
-
-/* Disable text selection on UI elements */
-button,
-.no-select {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
-
-/* Fullscreen styles */
-:fullscreen {
-  background: hsl(var(--background));
-}
-
-:-webkit-full-screen {
-  background: hsl(var(--background));
-}
-
+:fullscreen,
+:-webkit-full-screen,
 :-moz-full-screen {
   background: hsl(var(--background));
 }

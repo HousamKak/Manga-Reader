@@ -1,3 +1,5 @@
+export type ReadingStatus = 'plan' | 'reading' | 'done';
+
 export interface Manga {
   id: string;
   title: string;
@@ -5,6 +7,8 @@ export interface Manga {
   baseUrl: string; // e.g., "https://manga.pics"
   coverImage?: string;
   totalChapters?: number;
+  status: ReadingStatus;
+  tags: string[];
   chapters: Chapter[];
   lastRead?: {
     chapterId: string;
