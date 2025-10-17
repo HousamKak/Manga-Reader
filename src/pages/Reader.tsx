@@ -23,6 +23,7 @@ export function Reader() {
   const [showSettings, setShowSettings] = useState(false);
   const [reloadingChapter, setReloadingChapter] = useState(false);
   const initialPageAppliedRef = useRef(false);
+  const pendingScrollToTopRef = useRef(true);
 
   const { currentManga, loadManga, updateReadingProgress, discoverChapter } = useMangaStore();
   const {
@@ -69,6 +70,37 @@ export function Reader() {
 
   useEffect(() => {
     initialPageAppliedRef.current = false;
+  }, [chapterId]);
+
+  const requestScrollToTop = useCallback(
+    (options?: { immediate?: boolean }) => {
+      pendingScrollToTopRef.current = true;
+
+      if (options?.immediate && typeof window !== 'undefined') {
+        const scrollingElement =
+          document.scrollingElement || document.documentElement || document.body;
+
+        requestAnimationFrame(() => {
+          scrollingElement.scrollTo({ top: 0, behavior: 'auto' });
+          pendingScrollToTopRef.current = false;
+        });
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!chapterId || !pendingScrollToTopRef.current) return;
+    if (typeof window === 'undefined') return;
+
+    const scrollingElement =
+      document.scrollingElement || document.documentElement || document.body;
+
+    pendingScrollToTopRef.current = false;
+
+    requestAnimationFrame(() => {
+      scrollingElement.scrollTo({ top: 0, behavior: 'auto' });
+    });
   }, [chapterId]);
 
   // Update navigation state
@@ -152,6 +184,7 @@ export function Reader() {
     const number = parseInt(chapterId, 10);
     if (Number.isNaN(number)) return;
 
+    requestScrollToTop({ immediate: true });
     setReloadingChapter(true);
     discoverChapter(mangaId, number, { force: true })
       .catch((error) => {
@@ -160,7 +193,7 @@ export function Reader() {
       .finally(() => {
         setReloadingChapter(false);
       });
-  }, [mangaId, chapterId, reloadingChapter, discoverChapter]);
+  }, [mangaId, chapterId, reloadingChapter, discoverChapter, requestScrollToTop]);
 
   // Preload adjacent pages
   const pagesToPreload = React.useMemo(() => {
@@ -260,12 +293,14 @@ export function Reader() {
   const handleNextChapter = () => {
     if (!currentManga || !navigation.hasNextChapter) return;
     const nextChapter = currentManga.chapters[navigation.currentChapterIndex + 1];
+    requestScrollToTop();
     navigate(`/read/${mangaId}/${nextChapter.chapterNumber}`);
   };
 
   const handlePreviousChapter = () => {
     if (!currentManga || !navigation.hasPreviousChapter) return;
     const prevChapter = currentManga.chapters[navigation.currentChapterIndex - 1];
+    requestScrollToTop();
     navigate(`/read/${mangaId}/${prevChapter.chapterNumber}`);
   };
 
@@ -273,7 +308,12 @@ export function Reader() {
     // Extract chapter number from chapter ID
     const chapter = currentManga?.chapters.find(c => c.id === chapterId);
     if (chapter) {
-      navigate(`/read/${mangaId}/${chapter.chapterNumber}`);
+      if (chapterNumber && chapter.chapterNumber === chapterNumber) {
+        requestScrollToTop({ immediate: true });
+      } else {
+        requestScrollToTop();
+        navigate(`/read/${mangaId}/${chapter.chapterNumber}`);
+      }
     }
   };
 
@@ -331,7 +371,12 @@ export function Reader() {
           updateSettings({ imageFit: fit });
         }}
         onChapterChange={(ch) => {
-          navigate(`/read/${mangaId}/${ch}`);
+          if (chapterNumber && ch === chapterNumber) {
+            requestScrollToTop({ immediate: true });
+          } else {
+            requestScrollToTop();
+            navigate(`/read/${mangaId}/${ch}`);
+          }
         }}
         onPageChange={(pg) => {
           setPage(pg);
