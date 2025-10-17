@@ -1,5 +1,4 @@
-import React from 'react';
-import { Trash2, Play, MoreVertical } from 'lucide-react';
+import { Trash2, Play } from 'lucide-react';
 import { Manga } from '@/types/manga.types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
