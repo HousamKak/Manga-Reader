@@ -1,7 +1,5 @@
-import React from 'react';
 import { Check } from 'lucide-react';
 import { Chapter } from '@/types/manga.types';
-import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { cn } from '@/utils/cn';
 
