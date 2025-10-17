@@ -234,7 +234,7 @@ export function ReaderToolbar({
             onClick={cycleImageFit}
             title={`Image Fit: ${imageFitLabels[imageFit]} (Click to cycle)`}
           >
-            <ImageFitIcon className="h-5 w-5" />
+            <ImageFitIcon className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
 
           <Button
@@ -253,7 +253,9 @@ export function ReaderToolbar({
             title="Reload chapter pages"
             disabled={reloadingChapter}
           >
-            <RotateCcw className={cn('h-5 w-5', reloadingChapter && 'animate-spin')} />
+            <RotateCcw
+              className={cn('h-4 w-4 sm:h-5 sm:w-5', reloadingChapter && 'animate-spin')}
+            />
           </Button>
 
           <Button
@@ -262,7 +264,7 @@ export function ReaderToolbar({
             onClick={onChapterListClick}
             title="Chapter List"
           >
-            <BookOpen className="h-5 w-5" />
+            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
 
           <Button
@@ -272,9 +274,9 @@ export function ReaderToolbar({
             title={fullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           >
             {fullscreen ? (
-              <Minimize className="h-5 w-5" />
+              <Minimize className="h-4 w-4 sm:h-5 sm:w-5" />
             ) : (
-              <Maximize className="h-5 w-5" />
+              <Maximize className="h-4 w-4 sm:h-5 sm:w-5" />
             )}
           </Button>
 
@@ -284,7 +286,7 @@ export function ReaderToolbar({
             onClick={onSettingsClick}
             title="Settings"
           >
-            <Settings className="h-5 w-5" />
+            <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </div>
       </div>
