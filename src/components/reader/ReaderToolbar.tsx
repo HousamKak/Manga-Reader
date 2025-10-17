@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   Settings,
@@ -27,7 +27,6 @@ interface ReaderToolbarProps {
   readingMode: ReadingMode;
   imageFit: ImageFit;
   fullscreen: boolean;
-  visible?: boolean;
   onBack: () => void;
   onSettingsClick: () => void;
   onChapterListClick: () => void;
@@ -50,7 +49,6 @@ export function ReaderToolbar({
   readingMode,
   imageFit,
   fullscreen,
-  visible = true,
   onBack,
   onSettingsClick,
   onChapterListClick,
@@ -63,14 +61,14 @@ export function ReaderToolbar({
   reloadingChapter = false,
   className
 }: ReaderToolbarProps) {
-  const [chapterInput, setChapterInput] = React.useState(chapterNumber.toString());
-  const [pageInput, setPageInput] = React.useState((currentPage + 1).toString());
+  const [chapterInput, setChapterInput] = useState(chapterNumber.toString());
+  const [pageInput, setPageInput] = useState((currentPage + 1).toString());
 
-  React.useEffect(() => {
+  useEffect(() => {
     setChapterInput(chapterNumber.toString());
   }, [chapterNumber]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPageInput((currentPage + 1).toString());
   }, [currentPage]);
   const readingModeIcons = {

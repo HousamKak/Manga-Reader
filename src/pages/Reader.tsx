@@ -317,7 +317,6 @@ export function Reader() {
         readingMode={settings.readingMode}
         imageFit={settings.imageFit}
         fullscreen={!!document.fullscreenElement}
-        visible={true}
         onBack={() => navigate('/')}
         onSettingsClick={() => setShowSettings(true)}
         onChapterListClick={() => setShowChapterSelector(true)}
