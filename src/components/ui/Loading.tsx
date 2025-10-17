@@ -9,7 +9,7 @@ export function Loading({ size = 'md', className }: LoadingProps) {
   return (
     <div
       className={cn(
-        'inline-block animate-spin rounded-full border-2 border-solid border-current border-r-transparent',
+        'inline-block animate-spin rounded-full border-2 border-solid border-amber-700 border-r-transparent text-amber-700',
         {
           'h-4 w-4': size === 'sm',
           'h-8 w-8': size === 'md',
@@ -26,9 +26,13 @@ export function Loading({ size = 'md', className }: LoadingProps) {
 
 export function LoadingScreen({ message }: { message?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-library-pattern text-stone-800">
       <Loading size="lg" />
-      {message && <p className="mt-4 text-muted-foreground">{message}</p>}
+      {message && (
+        <p className="mt-4 text-xs uppercase tracking-[0.3em] text-stone-600">
+          {message}
+        </p>
+      )}
     </div>
   );
 }

@@ -12,20 +12,22 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center rounded-md font-medium transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          'inline-flex items-center justify-center gap-2 border-2 font-display uppercase tracking-[0.3em]',
+          'transition duration-200 ease-out shadow-md shadow-stone-900/20',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--parchment))]',
           'disabled:opacity-50 disabled:pointer-events-none',
           {
-            'bg-primary text-primary-foreground hover:bg-primary/90':
+            'border-stone-900 bg-amber-400 text-stone-900 hover:-translate-y-[1px] hover:bg-amber-500':
               variant === 'default',
-            'border border-input bg-background hover:bg-accent hover:text-accent-foreground':
+            'border-stone-700 bg-transparent text-stone-800 hover:bg-amber-200/50 hover:text-amber-900':
               variant === 'outline',
-            'hover:bg-accent hover:text-accent-foreground': variant === 'ghost',
-            'bg-destructive text-destructive-foreground hover:bg-destructive/90':
+            'border-transparent bg-transparent text-stone-700 hover:text-amber-900':
+              variant === 'ghost',
+            'border-red-900 bg-red-700 text-red-100 hover:bg-red-600':
               variant === 'destructive',
-            'h-8 px-3 text-sm': size === 'sm',
-            'h-10 px-4': size === 'md',
-            'h-12 px-6 text-lg': size === 'lg'
+            'h-8 px-3 text-[10px]': size === 'sm',
+            'h-10 px-5 text-xs': size === 'md',
+            'h-12 px-6 text-sm': size === 'lg'
           },
           className
         )}

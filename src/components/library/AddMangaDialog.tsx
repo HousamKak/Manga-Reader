@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { isValidMangaSlug } from '@/utils/validators';
+import { TagEditor } from '@/components/ui/TagEditor';
+import { ReadingStatus } from '@/types/manga.types';
 
 interface AddMangaDialogProps {
   open: boolean;
@@ -13,6 +15,8 @@ interface AddMangaDialogProps {
     urlSlug: string;
     baseUrl: string;
     autoDiscover: boolean;
+    status: ReadingStatus;
+    tags: string[];
   }) => Promise<void>;
 }
 
@@ -21,6 +25,8 @@ const DEFAULT_BASE_URL = 'https://manga.pics';
 export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
   const [mangaSlug, setMangaSlug] = useState('');
   const [autoDiscover, setAutoDiscover] = useState(true);
+  const [status, setStatus] = useState<ReadingStatus>('plan');
+  const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -53,12 +59,16 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
         title: generatedTitle,
         urlSlug: cleanedSlug,
         baseUrl: DEFAULT_BASE_URL,
-        autoDiscover
+        autoDiscover,
+        status,
+        tags
       });
 
       // Reset form
       setMangaSlug('');
       setAutoDiscover(true);
+      setStatus('plan');
+      setTags([]);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add manga');
@@ -74,7 +84,7 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
           <DialogTitle>Add New Manga</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           <div>
             <label className="block text-sm font-medium mb-2">
               Manga Slug
@@ -93,18 +103,52 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="autoDiscover"
-              checked={autoDiscover}
-              onChange={(e) => setAutoDiscover(e.target.checked)}
-              disabled={loading}
-              className="h-4 w-4"
-            />
-            <label htmlFor="autoDiscover" className="text-sm">
-              Automatically discover all chapters (may take a while)
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Reading Status
+              </label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as ReadingStatus)}
+                disabled={loading}
+                className="w-full rounded border-2 border-stone-600 bg-[hsl(var(--parchment))] px-3 py-2 text-sm uppercase tracking-wide text-stone-800 shadow-inner focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                <option value="plan">In The Scriptorium (Plan)</option>
+                <option value="reading">Being Read</option>
+                <option value="done">Tale Completed</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Discovery
+              </label>
+              <div className="flex items-center gap-2 rounded border-2 border-stone-600 bg-[hsl(var(--parchment))] px-3 py-2 shadow-inner">
+                <input
+                  type="checkbox"
+                  id="autoDiscover"
+                  checked={autoDiscover}
+                  onChange={(e) => setAutoDiscover(e.target.checked)}
+                  disabled={loading}
+                  className="h-4 w-4 accent-amber-700"
+                />
+                <label htmlFor="autoDiscover" className="text-sm text-stone-700">
+                  Automatically discover all chapters (may take a while)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Tags of the Realm
             </label>
+            <TagEditor
+              value={tags}
+              onChange={setTags}
+              placeholder="Add tags such as Adventure, Romance, Knightly Tales"
+            />
           </div>
 
           {error && (

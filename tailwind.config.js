@@ -7,6 +7,14 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ['var(--font-display)', 'serif'],
+        body: ['var(--font-body)', 'serif']
+      },
+      backgroundImage: {
+        'library-pattern':
+          'radial-gradient(circle at 10% 10%, rgba(226, 210, 163, 0.4) 0, rgba(226, 210, 163, 0) 50%), radial-gradient(circle at 90% 90%, rgba(206, 186, 143, 0.35) 0, rgba(206, 186, 143, 0) 55%)'
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

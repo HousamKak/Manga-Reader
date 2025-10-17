@@ -4,6 +4,15 @@ import { saveManga, getManga, getAllManga, deleteManga } from '@/services/storag
 import { discoverAllChapters, discoverChapterPages } from '@/services/mangaService';
 import { buildMangaPageUrl } from '@/utils/urlBuilder';
 
+const normalizeManga = (manga: Manga): Manga => {
+  const partial = manga as Partial<Manga>;
+  return {
+    ...manga,
+    status: (partial.status as Manga['status']) ?? 'plan',
+    tags: Array.isArray(partial.tags) ? (partial.tags as string[]) : []
+  };
+};
+
 interface MangaStore {
   manga: Manga[];
   currentManga: Manga | null;
@@ -38,7 +47,7 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const manga = await getAllManga();
-      set({ manga, isLoading: false });
+      set({ manga: manga.map(normalizeManga), isLoading: false });
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to load manga',
@@ -51,7 +60,10 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const manga = await getManga(id);
-      set({ currentManga: manga || null, isLoading: false });
+      set({
+        currentManga: manga ? normalizeManga(manga) : null,
+        isLoading: false
+      });
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to load manga',
@@ -65,6 +77,8 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
     try {
       const newManga: Manga = {
         ...mangaData,
+        status: mangaData.status ?? 'plan',
+        tags: mangaData.tags ?? [],
         id: `manga-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         dateAdded: Date.now(),
         dateUpdated: Date.now(),
@@ -73,7 +87,7 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
 
       await saveManga(newManga);
       const manga = await getAllManga();
-      set({ manga, isLoading: false });
+      set({ manga: manga.map(normalizeManga), isLoading: false });
 
       return newManga;
     } catch (error) {
@@ -99,10 +113,10 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
       await saveManga(updatedManga);
 
       const allManga = await getAllManga();
-      set({ manga: allManga });
+      set({ manga: allManga.map(normalizeManga) });
 
       if (get().currentManga?.id === id) {
-        set({ currentManga: updatedManga });
+        set({ currentManga: normalizeManga(updatedManga) });
       }
     } catch (error) {
       set({
@@ -117,7 +131,7 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
     try {
       await deleteManga(id);
       const manga = await getAllManga();
-      set({ manga, isLoading: false });
+      set({ manga: manga.map(normalizeManga), isLoading: false });
 
       if (get().currentManga?.id === id) {
         set({ currentManga: null });
@@ -314,6 +328,6 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
   },
 
   setCurrentManga: (manga: Manga | null) => {
-    set({ currentManga: manga });
+    set({ currentManga: manga ? normalizeManga(manga) : null });
   }
 }));

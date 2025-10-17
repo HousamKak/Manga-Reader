@@ -1,4 +1,4 @@
-import { Trash2, Play } from 'lucide-react';
+import { Trash2, Play, Pencil } from 'lucide-react';
 import { Manga } from '@/types/manga.types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -8,23 +8,46 @@ interface MangaCardProps {
   manga: Manga;
   onRead: (manga: Manga) => void;
   onDelete: (manga: Manga) => void;
+  onEdit: (manga: Manga) => void;
   className?: string;
 }
 
-export function MangaCard({ manga, onRead, onDelete, className }: MangaCardProps) {
+const statusColors: Record<Manga['status'], string> = {
+  plan: 'bg-amber-200/70 text-amber-900 border-amber-700/70',
+  reading: 'bg-emerald-200/70 text-emerald-900 border-emerald-700/70',
+  done: 'bg-slate-300/70 text-slate-900 border-slate-700/70'
+};
+
+export function MangaCard({ manga, onRead, onDelete, onEdit, className }: MangaCardProps) {
   const lastRead = manga.lastRead;
   const progress = lastRead
     ? manga.chapters.find((c) => c.id === lastRead.chapterId)
     : null;
 
   return (
-    <Card className={cn('overflow-hidden hover:shadow-lg transition-shadow', className)}>
+    <Card
+      className={cn(
+        'overflow-hidden border-2 border-stone-700/70 bg-[hsl(var(--parchment))] shadow-lg shadow-stone-900/20 transition-transform hover:-translate-y-1 hover:shadow-xl',
+        className
+      )}
+    >
       <div
-        className="h-64 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center relative group"
+        className="group relative h-64 cursor-pointer overflow-hidden bg-gradient-to-br from-stone-500/20 via-amber-300/30 to-stone-700/30"
         onClick={() => onRead(manga)}
         role="button"
         tabIndex={0}
       >
+        <div
+          className={cn(
+            'absolute left-4 top-4 inline-flex rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-widest',
+            statusColors[manga.status] ?? statusColors.plan
+          )}
+        >
+          {manga.status === 'plan' && 'In The Scriptorium'}
+          {manga.status === 'reading' && 'Being Read'}
+          {manga.status === 'done' && 'Tale Completed'}
+        </div>
+
         {manga.coverImage ? (
           <img
             src={manga.coverImage}
@@ -38,14 +61,26 @@ export function MangaCard({ manga, onRead, onDelete, className }: MangaCardProps
           </div>
         )}
 
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <Button variant="default" size="lg">
-            <Play className="h-5 w-5 mr-2" />
+        <div className="absolute inset-0 flex items-center justify-center bg-stone-900/60 opacity-0 transition-opacity group-hover:opacity-100">
+          <Button size="lg">
+            <Play className="mr-2 h-5 w-5" />
             Continue Reading
           </Button>
         </div>
 
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(manga);
+            }}
+            title="Curate Tags & Status"
+            className="border border-stone-500/70 bg-[hsl(var(--parchment))]/90 text-stone-800 hover:bg-amber-200/80"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
           <Button
             variant="destructive"
             size="sm"
@@ -59,22 +94,37 @@ export function MangaCard({ manga, onRead, onDelete, className }: MangaCardProps
         </div>
       </div>
 
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2">{manga.title}</h3>
+      <CardContent className="space-y-3 p-5">
+        <h3 className="font-display text-lg font-semibold uppercase tracking-[0.3em] text-stone-900 leading-snug break-words">
+          {manga.title}
+        </h3>
 
-        <div className="space-y-1 text-sm text-muted-foreground">
-          <p>{manga.totalChapters || '?'} chapters</p>
+        <div className="space-y-1 text-xs uppercase tracking-wide text-stone-700">
+          <p>{manga.totalChapters || '?'} known chapters</p>
 
           {lastRead && progress && (
-            <p className="text-primary">
-              Reading Chapter {progress.chapterNumber} - Page {lastRead.page}
+            <p className="text-amber-800">
+              Chapter {progress.chapterNumber} · Page {lastRead.page}
             </p>
           )}
 
-          <p className="text-xs">
-            Added {new Date(manga.dateAdded).toLocaleDateString()}
+          <p className="text-stone-600">
+            Inscribed {new Date(manga.dateAdded).toLocaleDateString()}
           </p>
         </div>
+
+        {manga.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {manga.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-stone-600/50 bg-stone-200/60 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-stone-700"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

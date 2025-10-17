@@ -26,6 +26,15 @@ interface MangaReaderDB extends DBSchema {
 
 let db: IDBPDatabase<MangaReaderDB> | null = null;
 
+const ensureMangaDefaults = (manga: Manga): Manga => {
+  const partial = manga as Partial<Manga>;
+  return {
+    ...manga,
+    status: (partial.status as Manga['status']) ?? 'plan',
+    tags: Array.isArray(partial.tags) ? (partial.tags as string[]) : []
+  };
+};
+
 /**
  * Initializes the IndexedDB database
  */
@@ -61,7 +70,7 @@ export async function initDB(): Promise<IDBPDatabase<MangaReaderDB>> {
  */
 export async function saveManga(manga: Manga): Promise<void> {
   const database = await initDB();
-  await database.put('manga', manga);
+  await database.put('manga', ensureMangaDefaults(manga));
 }
 
 /**
@@ -69,7 +78,8 @@ export async function saveManga(manga: Manga): Promise<void> {
  */
 export async function getManga(id: string): Promise<Manga | undefined> {
   const database = await initDB();
-  return await database.get('manga', id);
+  const manga = await database.get('manga', id);
+  return manga ? ensureMangaDefaults(manga) : undefined;
 }
 
 /**
@@ -78,7 +88,7 @@ export async function getManga(id: string): Promise<Manga | undefined> {
 export async function getAllManga(): Promise<Manga[]> {
   const database = await initDB();
   const manga = await database.getAllFromIndex('manga', 'by-date');
-  return manga.reverse();
+  return manga.reverse().map(ensureMangaDefaults);
 }
 
 /**
