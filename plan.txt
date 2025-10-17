@@ -1,0 +1,275 @@
+Overview
+I bought access to manga pages from URLs of the following form, which gave me full legal rights to access the resource. https://manga.pics/my-gift-lvl-9999-unlimited-gacha/chapter-105/3.jpg and the number at the end is the page. I do not know the length of the last page one so we need to test. The idea is I need to input this specific name in the url my-gift-lvl-9999-unlimited-gacha so I need to know how it is written on the website, the manga name exactly, and if I know the manga name exactly, we can get all the pages, along with chapters. so for that, I want to create an application that helps me view those manga as am trying to escape ads and popups. I want it a cool looking applications with all the useful manga and reading functionalities scrolling chapter choice and anything else useful. give me a full plan to implement this website app
+
+full plan:
+
+# Manga Reader Web Application - Complete Implementation Plan
+
+## 🎯 Project Overview
+
+A modern, ad-free manga reader web application that allows you to read legally purchased manga with an intuitive interface, smooth scrolling, and chapter management.
+
+## 📋 Architecture & Technology Stack
+
+### Frontend Stack
+- **Framework**: React 18+ with TypeScript
+- **Build Tool**: Vite (fast development & optimized builds)
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **State Management**: Zustand (lightweight, simple)
+- **Image Handling**: React-lazy-load-image-component
+- **PWA Support**: Vite PWA Plugin
+- **Gestures**: React-swipeable or use-gesture
+
+### Key Features to Implement
+
+#### 1. **Core Reading Features**
+- Continuous vertical scrolling (webtoon style) and page-by-page modes
+- Image preloading for smooth experience
+- Zoom and pan functionality
+- Reading progress tracking
+- Bookmark system
+- Reading history
+
+#### 2. **Navigation & Discovery**
+- Chapter selector with thumbnails
+- Quick jump to specific page
+- Previous/Next chapter buttons
+- Chapter progress indicator
+- Search/filter your manga library
+
+#### 3. **Customization**
+- Reading direction (LTR/RTL)
+- Page layout (single/double page)
+- Background color (white/black/sepia)
+- Image fit options (fit width/height/stretch)
+- Font size for UI elements
+
+#### 4. **Smart Loading**
+- Auto-detect chapter count by probing URLs
+- Auto-detect page count per chapter
+- Efficient image caching strategy
+- Lazy loading with intersection observer
+- Prefetch next chapter
+
+#### 5. **UI/UX Excellence**
+- Fullscreen mode
+- Keyboard shortcuts
+- Touch gestures (swipe for next/previous)
+- Minimal UI that hides when reading
+- Loading states and error handling
+- Responsive design (mobile + desktop)
+
+## 🏗️ Implementation Phases
+
+### **Phase 1: Core Infrastructure** (Week 1)
+```
+1. Project setup with Vite + React + TypeScript
+2. Basic routing structure
+3. Create data models and types
+4. Implement URL probe service (detect chapters/pages)
+5. Basic image loading component
+6. Storage layer (localStorage/IndexedDB)
+```
+
+### **Phase 2: Reader Component** (Week 1-2)
+```
+1. Main reader layout
+2. Image viewer with zoom/pan
+3. Continuous scroll mode
+4. Page navigation controls
+5. Preloading logic
+6. Error boundaries
+```
+
+### **Phase 3: Chapter & Library Management** (Week 2)
+```
+1. Manga library page
+2. Add manga form (input URL format)
+3. Chapter selector UI
+4. Auto-discovery service
+5. Progress tracking system
+```
+
+### **Phase 4: Advanced Features** (Week 3)
+```
+1. Reading modes (single/double page)
+2. Customization settings
+3. Keyboard shortcuts
+4. Touch gestures
+5. Bookmarks system
+6. Reading history
+```
+
+### **Phase 5: Polish & Optimization** (Week 3-4)
+```
+1. PWA configuration
+2. Offline support
+3. Performance optimization
+4. Error handling refinement
+5. Loading states
+6. Accessibility improvements
+```
+
+## 📁 Project Structure
+
+```
+manga-reader/
+├── public/
+│   ├── icons/
+│   └── manifest.json
+├── src/
+│   ├── components/
+│   │   ├── reader/
+│   │   │   ├── ImageViewer.tsx
+│   │   │   ├── PageControls.tsx
+│   │   │   ├── ChapterSelector.tsx
+│   │   │   └── ReaderToolbar.tsx
+│   │   ├── library/
+│   │   │   ├── MangaGrid.tsx
+│   │   │   ├── MangaCard.tsx
+│   │   │   └── AddMangaDialog.tsx
+│   │   ├── settings/
+│   │   │   └── SettingsPanel.tsx
+│   │   └── ui/ (shadcn components)
+│   ├── services/
+│   │   ├── mangaService.ts (URL probing, data fetching)
+│   │   ├── storageService.ts (localStorage/IndexedDB)
+│   │   ├── cacheService.ts (image caching)
+│   │   └── progressService.ts (reading progress)
+│   ├── hooks/
+│   │   ├── useMangaReader.ts
+│   │   ├── useKeyboardShortcuts.ts
+│   │   ├── useImagePreloader.ts
+│   │   └── useSwipeGestures.ts
+│   ├── stores/
+│   │   ├── mangaStore.ts (Zustand store)
+│   │   ├── readerStore.ts
+│   │   └── settingsStore.ts
+│   ├── types/
+│   │   ├── manga.types.ts
+│   │   ├── reader.types.ts
+│   │   └── settings.types.ts
+│   ├── utils/
+│   │   ├── urlBuilder.ts
+│   │   ├── imageLoader.ts
+│   │   └── validators.ts
+│   ├── pages/
+│   │   ├── Library.tsx
+│   │   ├── Reader.tsx
+│   │   └── Settings.tsx
+│   ├── App.tsx
+│   └── main.tsx
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── tailwind.config.js
+```
+
+## 🔑 Key Technical Components
+
+### 1. **URL Probing Service**
+```typescript
+// Automatically discover chapter count and page count
+- Try URLs sequentially with exponential backoff
+- Cache discovered metadata
+- Handle 404s gracefully
+- Support different URL patterns
+```
+
+### 2. **Image Preloading Strategy**
+```typescript
+// Preload adjacent pages for smooth reading
+- Preload current + 2-3 next pages
+- Preload previous 1-2 pages
+- Intelligent prefetch based on scroll position
+- Cancel unused preloads
+```
+
+### 3. **Progress Tracking**
+```typescript
+// Track reading progress
+- Current chapter
+- Current page
+- Last read timestamp
+- Completion percentage
+- Sync to localStorage/IndexedDB
+```
+
+### 4. **Caching Strategy**
+```typescript
+// Optimize loading with caching
+- Use IndexedDB for image cache
+- Implement LRU eviction
+- Cache size limits
+- Clear cache option
+```
+
+## 🎨 UI/UX Design Patterns
+
+### Reading Modes
+1. **Continuous Scroll** (Default)
+   - Vertical scroll through all pages
+   - Infinite scroll with lazy loading
+   - Chapter boundaries marked
+
+2. **Single Page**
+   - One page at a time
+   - Left/Right navigation
+   - Larger page display
+
+3. **Double Page**
+   - Two pages side-by-side
+   - Manga-style reading
+   - Automatic page pairing
+
+### Color Schemes
+- Light mode (white background)
+- Dark mode (black background)
+- Sepia mode (eye comfort)
+
+## 🔐 Security & Privacy
+
+- All data stored locally (no external servers)
+- No tracking or analytics
+- No external API calls except image loading
+- Content Security Policy headers
+- Input validation for URLs
+
+## ⚡ Performance Optimizations
+
+1. **Image Loading**
+   - Progressive JPEG support
+   - Lazy loading with Intersection Observer
+   - Request pooling (max 6 concurrent)
+   - Abort controllers for cancelled loads
+
+2. **Memory Management**
+   - Virtualization for large chapter lists
+   - Unload off-screen images
+   - Garbage collection hints
+
+3. **Render Optimization**
+   - React.memo for expensive components
+   - useCallback for event handlers
+   - debounce/throttle for scroll events
+
+## 📱 PWA Features
+
+- Offline reading (cached chapters)
+- Install as app on mobile/desktop
+- Background sync for updates
+- Push notifications for new chapters (optional)
+
+## 🎯 Next Steps
+
+1. **I can create the full application code** with all features
+2. **Start with a minimal viable product** (core reader first)
+3. **Build iteratively** adding features one by one
+
+Would you like me to:
+1. **Generate the complete code** for the full application?
+2. **Start with Phase 1** (core infrastructure + basic reader)?
+3. **Focus on a specific component** first?
+
+Let me know your preference and I'll create production-ready, fully-typed TypeScript code with comprehensive error handling, documentation, and all the quality standards from my guidelines!
+

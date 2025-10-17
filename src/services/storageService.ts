@@ -1,0 +1,222 @@
+import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { Manga } from '@/types/manga.types';
+import { AppSettings } from '@/types/settings.types';
+
+interface MangaReaderDB extends DBSchema {
+  manga: {
+    key: string;
+    value: Manga;
+    indexes: { 'by-date': number };
+  };
+  settings: {
+    key: string;
+    value: AppSettings;
+  };
+  imageCache: {
+    key: string;
+    value: {
+      url: string;
+      blob: Blob;
+      timestamp: number;
+      size: number;
+    };
+    indexes: { 'by-timestamp': number };
+  };
+}
+
+let db: IDBPDatabase<MangaReaderDB> | null = null;
+
+/**
+ * Initializes the IndexedDB database
+ */
+export async function initDB(): Promise<IDBPDatabase<MangaReaderDB>> {
+  if (db) return db;
+
+  db = await openDB<MangaReaderDB>('manga-reader-db', 1, {
+    upgrade(database) {
+      // Create manga store
+      const mangaStore = database.createObjectStore('manga', {
+        keyPath: 'id'
+      });
+      mangaStore.createIndex('by-date', 'dateAdded');
+
+      // Create settings store
+      database.createObjectStore('settings', {
+        keyPath: 'id'
+      });
+
+      // Create image cache store
+      const imageCacheStore = database.createObjectStore('imageCache', {
+        keyPath: 'url'
+      });
+      imageCacheStore.createIndex('by-timestamp', 'timestamp');
+    }
+  });
+
+  return db;
+}
+
+/**
+ * Saves a manga to the database
+ */
+export async function saveManga(manga: Manga): Promise<void> {
+  const database = await initDB();
+  await database.put('manga', manga);
+}
+
+/**
+ * Gets a manga by ID
+ */
+export async function getManga(id: string): Promise<Manga | undefined> {
+  const database = await initDB();
+  return await database.get('manga', id);
+}
+
+/**
+ * Gets all manga sorted by date added (newest first)
+ */
+export async function getAllManga(): Promise<Manga[]> {
+  const database = await initDB();
+  const manga = await database.getAllFromIndex('manga', 'by-date');
+  return manga.reverse();
+}
+
+/**
+ * Deletes a manga from the database
+ */
+export async function deleteManga(id: string): Promise<void> {
+  const database = await initDB();
+  await database.delete('manga', id);
+}
+
+/**
+ * Saves app settings to both IndexedDB and localStorage
+ */
+export async function saveSettings(settings: AppSettings): Promise<void> {
+  // Save to localStorage for immediate persistence
+  try {
+    localStorage.setItem('manga-reader-settings', JSON.stringify(settings));
+  } catch (error) {
+    console.error('Failed to save settings to localStorage:', error);
+  }
+
+  // Save to IndexedDB as well
+  const database = await initDB();
+  await database.put('settings', { ...settings, id: 'app-settings' } as any);
+}
+
+/**
+ * Gets app settings from localStorage (fast) or IndexedDB (fallback)
+ */
+export async function getSettings(): Promise<AppSettings | undefined> {
+  // Try localStorage first (faster and synchronous)
+  try {
+    const localSettings = localStorage.getItem('manga-reader-settings');
+    if (localSettings) {
+      return JSON.parse(localSettings) as AppSettings;
+    }
+  } catch (error) {
+    console.error('Failed to load settings from localStorage:', error);
+  }
+
+  // Fallback to IndexedDB
+  const database = await initDB();
+  const settings = await database.get('settings', 'app-settings');
+  
+  // If found in IndexedDB but not in localStorage, sync to localStorage
+  if (settings) {
+    try {
+      localStorage.setItem('manga-reader-settings', JSON.stringify(settings));
+    } catch (error) {
+      console.error('Failed to sync settings to localStorage:', error);
+    }
+  }
+  
+  return settings as AppSettings | undefined;
+}
+
+/**
+ * Caches an image blob
+ */
+export async function cacheImage(url: string, blob: Blob): Promise<void> {
+  const database = await initDB();
+  await database.put('imageCache', {
+    url,
+    blob,
+    timestamp: Date.now(),
+    size: blob.size
+  });
+}
+
+/**
+ * Gets a cached image
+ */
+export async function getCachedImage(url: string): Promise<Blob | undefined> {
+  const database = await initDB();
+  const cached = await database.get('imageCache', url);
+  return cached?.blob;
+}
+
+/**
+ * Gets the total cache size in bytes
+ */
+export async function getCacheSize(): Promise<number> {
+  const database = await initDB();
+  const allCached = await database.getAll('imageCache');
+  return allCached.reduce((total, item) => total + item.size, 0);
+}
+
+/**
+ * Clears old cache entries to stay under the size limit
+ */
+export async function pruneCache(maxSizeBytes: number): Promise<void> {
+  const database = await initDB();
+  const allCached = await database.getAllFromIndex('imageCache', 'by-timestamp');
+
+  let totalSize = allCached.reduce((sum, item) => sum + item.size, 0);
+
+  // Remove oldest entries until under the limit
+  for (const item of allCached) {
+    if (totalSize <= maxSizeBytes) break;
+    await database.delete('imageCache', item.url);
+    totalSize -= item.size;
+  }
+}
+
+/**
+ * Clears all cached images
+ */
+export async function clearCache(): Promise<void> {
+  const database = await initDB();
+  await database.clear('imageCache');
+}
+
+/**
+ * LocalStorage helpers for temporary data
+ */
+export const localStorage = {
+  get<T>(key: string): T | null {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  set<T>(key: string, value: T): void {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
+    }
+  },
+
+  remove(key: string): void {
+    window.localStorage.removeItem(key);
+  },
+
+  clear(): void {
+    window.localStorage.clear();
+  }
+};
