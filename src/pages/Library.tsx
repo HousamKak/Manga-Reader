@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Settings, Loader2 } from 'lucide-react';
 import { useMangaStore } from '@/stores/mangaStore';
