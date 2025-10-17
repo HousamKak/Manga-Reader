@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMangaStore } from '@/stores/mangaStore';
 import { useReaderStore } from '@/stores/readerStore';
@@ -22,6 +22,7 @@ export function Reader() {
   const [showChapterSelector, setShowChapterSelector] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [reloadingChapter, setReloadingChapter] = useState(false);
+  const initialPageAppliedRef = useRef(false);
 
   const { currentManga, loadManga, updateReadingProgress, discoverChapter } = useMangaStore();
   const {
@@ -66,6 +67,10 @@ export function Reader() {
     }
   }, [chapterId, mangaId]); // Remove currentManga dependency to prevent re-renders
 
+  useEffect(() => {
+    initialPageAppliedRef.current = false;
+  }, [chapterId]);
+
   // Update navigation state
   useEffect(() => {
     if (!currentManga || !chapterId) return;
@@ -109,6 +114,38 @@ export function Reader() {
     : null;
   const currentPageData = currentChapter?.pages[currentPage]; // Pages are 0-indexed
 
+  useEffect(() => {
+    if (!currentManga || !chapterId) return;
+
+    const lastRead = currentManga.lastRead;
+    if (!lastRead) return;
+
+    const chapterMatch = lastRead.chapterId.match(/-ch(\d+)$/);
+    if (!chapterMatch) return;
+
+    const lastChapterNumber = parseInt(chapterMatch[1], 10);
+    const activeChapterNumber = parseInt(chapterId, 10);
+
+    if (Number.isNaN(lastChapterNumber) || Number.isNaN(activeChapterNumber)) {
+      return;
+    }
+
+    if (lastChapterNumber !== activeChapterNumber || initialPageAppliedRef.current) {
+      return;
+    }
+
+    const totalPages =
+      currentChapter?.totalPages ?? currentChapter?.pages.length ?? 0;
+
+    const targetPage =
+      totalPages > 0
+        ? Math.min(Math.max(lastRead.page ?? 0, 0), totalPages - 1)
+        : Math.max(lastRead.page ?? 0, 0);
+
+    setPage(targetPage);
+    initialPageAppliedRef.current = true;
+  }, [currentManga, chapterId, currentChapter, setPage]);
+
   const handleReloadChapter = useCallback(() => {
     if (!mangaId || !chapterId || reloadingChapter) return;
 
@@ -141,6 +178,22 @@ export function Reader() {
     enabled: settings.enablePreloading,
     maxConcurrent: settings.maxConcurrentLoads
   });
+
+  useEffect(() => {
+    if (!mangaId || !currentManga || !chapterNumber) return;
+
+    const totalChapters = currentManga.totalChapters;
+
+    [1, 2].forEach((offset) => {
+      const targetChapter = chapterNumber + offset;
+      if (targetChapter <= 0) return;
+      if (typeof totalChapters === 'number' && targetChapter > totalChapters) return;
+
+      discoverChapter(mangaId, targetChapter).catch(() => {
+        // Ignore prefetch failures; chapter may not exist yet
+      });
+    });
+  }, [currentManga, chapterNumber, mangaId, discoverChapter]);
 
   // Keyboard shortcuts
   const handleShortcutAction = useCallback(

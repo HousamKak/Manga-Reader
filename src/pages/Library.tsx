@@ -56,10 +56,38 @@ export function Library() {
   };
 
   const handleReadManga = (manga: Manga) => {
-    // Allow reading even if no chapters discovered yet
-    // Reader will handle discovery on-demand
-    const chapterId = manga.lastRead?.chapterId || `${manga.id}-ch1`;
-    navigate(`/read/${manga.id}/1`); // Navigate to chapter 1
+    const extractChapterNumber = (chapterId: string | undefined): number | null => {
+      if (!chapterId) return null;
+      const match = chapterId.match(/-ch(\d+)$/);
+      if (!match) return null;
+      const number = parseInt(match[1], 10);
+      return Number.isNaN(number) ? null : number;
+    };
+
+    const firstAvailableChapter = () => {
+      if (!manga.chapters || manga.chapters.length === 0) return 1;
+      return [...manga.chapters]
+        .map((chapter) => chapter.chapterNumber)
+        .filter((num) => typeof num === 'number' && num > 0)
+        .sort((a, b) => a - b)[0] || 1;
+    };
+
+    const lastReadChapterNumber = extractChapterNumber(manga.lastRead?.chapterId);
+    let targetChapterNumber = lastReadChapterNumber ?? firstAvailableChapter();
+
+    if (
+      manga.chapters &&
+      manga.chapters.length > 0 &&
+      !manga.chapters.some((chapter) => chapter.chapterNumber === targetChapterNumber)
+    ) {
+      targetChapterNumber = firstAvailableChapter();
+    }
+
+    if (targetChapterNumber < 1) {
+      targetChapterNumber = 1;
+    }
+
+    navigate(`/read/${manga.id}/${targetChapterNumber}`);
   };
 
   const handleDeleteManga = async (manga: Manga) => {

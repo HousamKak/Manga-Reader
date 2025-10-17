@@ -89,16 +89,46 @@ export async function deleteManga(id: string): Promise<void> {
   await database.delete('manga', id);
 }
 
+const SETTINGS_STORAGE_KEY = 'manga-reader-settings';
+
+function getBrowserLocalStorage(): Storage | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function writeSettingsToLocalStorage(settings: AppSettings): void {
+  const storage = getBrowserLocalStorage();
+  if (!storage) return;
+
+  try {
+    storage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch (error) {
+    console.error('Failed to save settings to localStorage:', error);
+  }
+}
+
+function readSettingsFromLocalStorage(): AppSettings | null {
+  const storage = getBrowserLocalStorage();
+  if (!storage) return null;
+
+  try {
+    const stored = storage.getItem(SETTINGS_STORAGE_KEY);
+    return stored ? (JSON.parse(stored) as AppSettings) : null;
+  } catch (error) {
+    console.error('Failed to load settings from localStorage:', error);
+    return null;
+  }
+}
+
 /**
  * Saves app settings to both IndexedDB and localStorage
  */
 export async function saveSettings(settings: AppSettings): Promise<void> {
-  // Save to localStorage for immediate persistence
-  try {
-    localStorage.setItem('manga-reader-settings', JSON.stringify(settings));
-  } catch (error) {
-    console.error('Failed to save settings to localStorage:', error);
-  }
+  writeSettingsToLocalStorage(settings);
 
   // Save to IndexedDB as well
   const database = await initDB();
@@ -109,29 +139,19 @@ export async function saveSettings(settings: AppSettings): Promise<void> {
  * Gets app settings from localStorage (fast) or IndexedDB (fallback)
  */
 export async function getSettings(): Promise<AppSettings | undefined> {
-  // Try localStorage first (faster and synchronous)
-  try {
-    const localSettings = localStorage.getItem('manga-reader-settings');
-    if (localSettings) {
-      return JSON.parse(localSettings) as AppSettings;
-    }
-  } catch (error) {
-    console.error('Failed to load settings from localStorage:', error);
+  const localSettings = readSettingsFromLocalStorage();
+  if (localSettings) {
+    return localSettings;
   }
 
   // Fallback to IndexedDB
   const database = await initDB();
   const settings = await database.get('settings', 'app-settings');
-  
-  // If found in IndexedDB but not in localStorage, sync to localStorage
+
   if (settings) {
-    try {
-      localStorage.setItem('manga-reader-settings', JSON.stringify(settings));
-    } catch (error) {
-      console.error('Failed to sync settings to localStorage:', error);
-    }
+    writeSettingsToLocalStorage(settings);
   }
-  
+
   return settings as AppSettings | undefined;
 }
 
@@ -194,10 +214,12 @@ export async function clearCache(): Promise<void> {
 /**
  * LocalStorage helpers for temporary data
  */
-export const localStorage = {
+export const localStorageHelper = {
   get<T>(key: string): T | null {
     try {
-      const item = window.localStorage.getItem(key);
+      const storage = getBrowserLocalStorage();
+      if (!storage) return null;
+      const item = storage.getItem(key);
       return item ? JSON.parse(item) : null;
     } catch {
       return null;
@@ -206,17 +228,20 @@ export const localStorage = {
 
   set<T>(key: string, value: T): void {
     try {
-      window.localStorage.setItem(key, JSON.stringify(value));
+      const storage = getBrowserLocalStorage();
+      storage?.setItem(key, JSON.stringify(value));
     } catch (error) {
       console.error('Failed to save to localStorage:', error);
     }
   },
 
   remove(key: string): void {
-    window.localStorage.removeItem(key);
+    const storage = getBrowserLocalStorage();
+    storage?.removeItem(key);
   },
 
   clear(): void {
-    window.localStorage.clear();
+    const storage = getBrowserLocalStorage();
+    storage?.clear();
   }
 };
