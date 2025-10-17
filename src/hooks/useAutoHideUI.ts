@@ -5,7 +5,7 @@ export function useAutoHideUI(
   delay: number = 3000,
   enabled: boolean = true
 ) {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const resetTimer = () => {
     if (!enabled) return;
@@ -36,6 +36,7 @@ export function useAutoHideUI(
       });
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
     };
   }, [enabled, delay, onHide]);
