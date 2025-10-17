@@ -110,19 +110,19 @@ export function ReaderToolbar({
         className
       )}
     >
-      <div className="container mx-auto flex items-center justify-between gap-4 p-3">
+      <div className="container mx-auto flex flex-wrap items-center justify-between gap-2 px-2 py-2 sm:flex-nowrap sm:gap-4 sm:px-4 sm:py-3">
         {/* Left Section */}
         <div className="flex items-center gap-2 min-w-0">
           <Button variant="ghost" size="sm" onClick={onBack} title="Back to Library">
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
           <div className="flex flex-col min-w-0">
-            <h1 className="font-semibold text-xs md:text-sm truncate">{title}</h1>
+            <h1 className="font-semibold text-xs sm:text-sm truncate leading-4">{title}</h1>
           </div>
         </div>
 
         {/* Middle Section - Chapter and Page Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-1 flex-wrap items-center justify-center gap-2 sm:flex-nowrap sm:justify-center sm:gap-3 min-w-[240px]">
           {/* Previous Chapter Button */}
           <Button
             variant="ghost"
@@ -134,13 +134,15 @@ export function ReaderToolbar({
             }}
             disabled={chapterNumber <= 1}
             title="Previous Chapter"
-            className="h-7 w-7 p-0"
+            className="h-8 w-8 p-0 sm:h-7 sm:w-7"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
           <div className="flex items-center gap-1">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">Ch:</span>
+            <span className="text-[0.7rem] text-muted-foreground whitespace-nowrap sm:text-xs">
+              Ch:
+            </span>
             <input
               type="number"
               min={1}
@@ -165,9 +167,11 @@ export function ReaderToolbar({
                   }
                 }
               }}
-              className="w-12 px-1 py-1 text-xs text-center border rounded"
+              className="h-8 w-14 px-2 text-[0.75rem] text-center border rounded sm:h-8 sm:w-16 sm:text-xs"
             />
-            <span className="text-xs text-muted-foreground">/ {totalChapters}</span>
+            <span className="text-[0.7rem] text-muted-foreground sm:text-xs">
+              / {totalChapters}
+            </span>
           </div>
 
           {/* Next Chapter Button */}
@@ -181,13 +185,15 @@ export function ReaderToolbar({
             }}
             disabled={chapterNumber >= totalChapters}
             title="Next Chapter"
-            className="h-7 w-7 p-0"
+            className="h-8 w-8 p-0 sm:h-7 sm:w-7"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
 
           <div className="flex items-center gap-1">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">Pg:</span>
+            <span className="text-[0.7rem] text-muted-foreground whitespace-nowrap sm:text-xs">
+              Pg:
+            </span>
             <input
               type="number"
               min={1}
@@ -212,14 +218,16 @@ export function ReaderToolbar({
                   }
                 }
               }}
-              className="w-12 px-1 py-1 text-xs text-center border rounded"
+              className="h-8 w-14 px-2 text-[0.75rem] text-center border rounded sm:h-8 sm:w-16 sm:text-xs"
             />
-            <span className="text-xs text-muted-foreground">/ {totalPages}</span>
+            <span className="text-[0.7rem] text-muted-foreground sm:text-xs">
+              / {totalPages}
+            </span>
           </div>
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant="ghost"
             size="sm"
@@ -235,7 +243,7 @@ export function ReaderToolbar({
             onClick={onToggleReadingMode}
             title={`Reading Mode: ${readingMode}`}
           >
-            <ReadingModeIcon className="h-5 w-5" />
+            <ReadingModeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
 
           <Button

@@ -25,6 +25,7 @@ export function ImageViewer({
 }: ImageViewerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [isTouchInput, setIsTouchInput] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -41,6 +42,44 @@ export function ImageViewer({
     setError(true);
     onError?.();
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const mediaQuery = window.matchMedia('(pointer: coarse)');
+
+    const updateTouchState = () => {
+      const navigatorAny = navigator as Navigator & {
+        msMaxTouchPoints?: number;
+      };
+
+      const touchDetected =
+        mediaQuery.matches ||
+        'ontouchstart' in window ||
+        (navigator.maxTouchPoints ?? 0) > 0 ||
+        (navigatorAny.msMaxTouchPoints ?? 0) > 0;
+
+      setIsTouchInput(touchDetected);
+    };
+
+    updateTouchState();
+
+    const handleChange = () => updateTouchState();
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    } else if (mediaQuery.addListener) {
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else if (mediaQuery.removeListener) {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
 
   const fitClass = {
     width: 'w-full h-auto max-w-full',
@@ -67,11 +106,13 @@ export function ImageViewer({
       maxScale={4}
       wheel={{ disabled: true }} // Disable wheel zoom to allow page scrolling
       doubleClick={{ mode: 'reset' }}
-      panning={{ disabled: false }}
+      panning={{ disabled: isTouchInput }}
+      pinch={{ disabled: false }}
       key={`zoom-${zoomLevel}`} // Force re-render when zoom changes
     >
       <TransformComponent
         wrapperClass={cn('w-full flex justify-center', className)}
+        wrapperStyle={isTouchInput ? { touchAction: 'pan-y' } : undefined}
         contentClass="flex justify-center w-full"
       >
         <div className="relative flex justify-center w-full">
