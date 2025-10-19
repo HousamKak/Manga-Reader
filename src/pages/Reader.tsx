@@ -386,7 +386,7 @@ export function Reader() {
       />
 
       {/* Main Content */}
-      <main className="pt-16 pb-24">
+      <main className="pt-32 sm:pt-16 pb-24">
         {settings.readingMode === 'continuous' ? (
           <div className="space-y-2">
             {currentChapter.pages.length > 0 ? (
