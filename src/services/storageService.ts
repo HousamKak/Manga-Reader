@@ -42,7 +42,7 @@ export async function initDB(): Promise<IDBPDatabase<MangaReaderDB>> {
   if (db) return db;
 
   db = await openDB<MangaReaderDB>('manga-reader-db', 2, {
-    upgrade(database, oldVersion) {
+    upgrade(database, _oldVersion) {
       // Create manga store if it doesn't exist
       if (!database.objectStoreNames.contains('manga')) {
         const mangaStore = database.createObjectStore('manga', {
