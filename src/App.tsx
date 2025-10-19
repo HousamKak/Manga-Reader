@@ -3,8 +3,11 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Library } from '@/pages/Library';
 import { Reader } from '@/pages/Reader';
 import { initDB } from '@/services/storageService';
+import { useMedievalTheme } from '@/hooks/useMedievalTheme';
 
 function App() {
+  useMedievalTheme();
+
   useEffect(() => {
     // Initialize IndexedDB on app start
     initDB().catch((error) => {

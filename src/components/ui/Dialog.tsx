@@ -29,7 +29,7 @@ export function DialogContent({
   return (
     <div
       className={cn(
-        'm-4 border-2 border-stone-800 bg-[hsl(var(--parchment))] p-6 shadow-2xl shadow-stone-900/50',
+        'm-4 border-2 border-stone-800 bg-[hsl(var(--parchment))] p-6 shadow-2xl shadow-stone-900/50 scroll-unfurl parchment-texture vellum-texture corner-flourish-dialog',
         className
       )}
       {...props}

@@ -2,6 +2,7 @@ import { Trash2, Play, Pencil } from 'lucide-react';
 import { Manga } from '@/types/manga.types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { StatusBanner } from '@/components/ui/StatusBanner';
 import { cn } from '@/utils/cn';
 
 interface MangaCardProps {
@@ -24,28 +25,29 @@ export function MangaCard({ manga, onRead, onDelete, onEdit, className }: MangaC
     ? manga.chapters.find((c) => c.id === lastRead.chapterId)
     : null;
 
+  const ageInDays = Math.floor((Date.now() - manga.dateAdded) / (1000 * 60 * 60 * 24));
+  const isAged = ageInDays > 30;
+
   return (
     <Card
       className={cn(
-        'overflow-hidden border-2 border-stone-700/70 bg-[hsl(var(--parchment))] shadow-lg shadow-stone-900/20 transition-transform hover:-translate-y-1 hover:shadow-xl',
+        'overflow-hidden border-2 border-stone-700/70 bg-[hsl(var(--parchment))] shadow-lg shadow-stone-900/20 transition-transform hover:-translate-y-1 hover:shadow-xl parchment-texture vellum-texture parchment-curl',
+        isAged && 'aged-parchment',
         className
       )}
     >
+      {/* Ribbon Bookmark */}
+      {lastRead && <div className="ribbon-bookmark" />}
+
       <div
         className="group relative h-48 cursor-pointer overflow-hidden bg-gradient-to-br from-stone-500/20 via-amber-300/30 to-stone-700/30"
         onClick={() => onRead(manga)}
         role="button"
         tabIndex={0}
       >
-        <div
-          className={cn(
-            'absolute left-4 top-4 inline-flex rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-widest',
-            statusColors[manga.status] ?? statusColors.plan
-          )}
-        >
-          {manga.status === 'plan' && 'In The Scriptorium'}
-          {manga.status === 'reading' && 'Being Read'}
-          {manga.status === 'done' && 'Tale Completed'}
+        {/* Status Banner */}
+        <div className="absolute left-2 top-2 z-10">
+          <StatusBanner status={manga.status} />
         </div>
 
         {manga.coverImage ? (
@@ -103,7 +105,7 @@ export function MangaCard({ manga, onRead, onDelete, onEdit, className }: MangaC
           <p>{manga.totalChapters || '?'} known chapters</p>
 
           {lastRead && progress && (
-            <p className="text-amber-800">
+            <p className="rubricated">
               Chapter {progress.chapterNumber} · Page {lastRead.page}
             </p>
           )}
@@ -112,6 +114,18 @@ export function MangaCard({ manga, onRead, onDelete, onEdit, className }: MangaC
             Inscribed {new Date(manga.dateAdded).toLocaleDateString()}
           </p>
         </div>
+
+        {/* Torch Progress Bar */}
+        {manga.totalChapters && manga.totalChapters > 0 && lastRead && progress && (
+          <div className="torch-progress mt-2">
+            <div
+              className="torch-progress-bar"
+              style={{
+                width: `${Math.min(100, (progress.chapterNumber / manga.totalChapters) * 100)}%`
+              }}
+            />
+          </div>
+        )}
 
         {manga.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">

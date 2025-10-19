@@ -17,7 +17,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--parchment))]',
           'disabled:opacity-50 disabled:pointer-events-none',
           {
-            'border-stone-900 bg-amber-400 text-stone-900 hover:-translate-y-[1px] hover:bg-amber-500':
+            'border-stone-900 bg-amber-400 text-stone-900 hover:-translate-y-[1px] hover:bg-amber-500 relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-amber-200/50 before:to-transparent before:translate-x-[-200%] hover:before:translate-x-[200%] before:transition-transform before:duration-700':
               variant === 'default',
             'border-stone-700 bg-transparent text-stone-800 hover:bg-amber-200/50 hover:text-amber-900':
               variant === 'outline',

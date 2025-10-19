@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=EB+Garamond:wght@400;600;700&family=UnifrakturCook:wght@700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -52,6 +52,50 @@
     --input: 24 24% 38%;
     --ring: 37 70% 48%;
   }
+
+  /* Medieval Time of Day Themes */
+  .medieval-morning {
+    --parchment: 45 65% 95%;
+    --background: 45 70% 96%;
+    --card: 43 55% 92%;
+    --primary: 40 80% 55%;
+    --accent: 42 45% 90%;
+  }
+
+  .medieval-evening {
+    --parchment: 35 50% 85%;
+    --background: 35 55% 88%;
+    --card: 33 48% 82%;
+    --primary: 30 70% 48%;
+    --accent: 32 40% 80%;
+  }
+
+  .medieval-night {
+    --parchment: 25 35% 20%;
+    --background: 25 40% 18%;
+    --foreground: 40 45% 88%;
+    --card: 28 32% 24%;
+    --card-foreground: 40 45% 88%;
+    --primary: 35 65% 45%;
+    --accent: 27 28% 28%;
+    --border: 22 28% 35%;
+    --input: 22 28% 35%;
+  }
+}
+
+/* Medieval Night specific adjustments */
+.medieval-night .bg-library-pattern {
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(139, 90, 43, 0.12) 0, rgba(139, 90, 43, 0) 55%),
+    radial-gradient(circle at 90% 80%, rgba(101, 67, 33, 0.10) 0, rgba(101, 67, 33, 0) 50%),
+    linear-gradient(90deg, rgba(80, 60, 40, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(80, 60, 40, 0.08) 1px, transparent 1px);
+}
+
+.medieval-night body {
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(139, 90, 43, 0.08) 0, rgba(139, 90, 43, 0) 55%),
+    radial-gradient(circle at 90% 80%, rgba(101, 67, 33, 0.06) 0, rgba(101, 67, 33, 0) 50%);
 }
 
 @layer base {
@@ -146,4 +190,825 @@ button,
 :-webkit-full-screen,
 :-moz-full-screen {
   background: hsl(var(--background));
+}
+
+/* ============================================ */
+/* Medieval Theme Enhancements */
+/* ============================================ */
+
+/* Quill cursor for text inputs */
+input[type='text'],
+input[type='search'],
+textarea {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 21l18-18-3-3-18 18 3 3zm15-16.5l1.5 1.5-13.5 13.5-1.5-1.5 13.5-13.5z' fill='%23654321'/%3E%3C/svg%3E"), text;
+}
+
+/* Parchment texture overlay */
+.parchment-texture {
+  position: relative;
+}
+
+.parchment-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(139, 115, 85, 0.03) 0px,
+      transparent 1px,
+      transparent 2px,
+      rgba(139, 115, 85, 0.03) 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(139, 115, 85, 0.03) 0px,
+      transparent 1px,
+      transparent 2px,
+      rgba(139, 115, 85, 0.03) 3px
+    );
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Torn parchment edges */
+.torn-edge {
+  position: relative;
+  clip-path: polygon(
+    0% 2%, 3% 0%, 6% 2%, 9% 0%, 12% 2%, 15% 0%, 18% 2%, 21% 0%, 24% 2%,
+    27% 0%, 30% 2%, 33% 0%, 36% 2%, 39% 0%, 42% 2%, 45% 0%, 48% 2%,
+    51% 0%, 54% 2%, 57% 0%, 60% 2%, 63% 0%, 66% 2%, 69% 0%, 72% 2%,
+    75% 0%, 78% 2%, 81% 0%, 84% 2%, 87% 0%, 90% 2%, 93% 0%, 96% 2%,
+    100% 0%, 100% 100%, 0% 100%
+  );
+}
+
+/* Wax seal effect */
+.wax-seal {
+  position: relative;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #c41e3a, #8b0000);
+  box-shadow:
+    inset -2px -2px 4px rgba(0, 0, 0, 0.5),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.2),
+    0 4px 8px rgba(139, 0, 0, 0.4);
+}
+
+.wax-seal::after {
+  content: '';
+  position: absolute;
+  inset: 15%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1), transparent);
+}
+
+/* Wax seal break animation */
+@keyframes seal-break {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1) rotate(5deg); }
+  100% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+}
+
+.wax-seal.breaking {
+  animation: seal-break 0.4s ease-out forwards;
+}
+
+/* Gold leaf shimmer effect */
+@keyframes gold-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Legendary shimmer for books */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Floating particle effect */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-10px) translateX(2px);
+    opacity: 1;
+  }
+}
+
+/* Flickering firelight effect */
+@keyframes fireFlicker {
+  0%, 100% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  75% {
+    opacity: 0.9;
+  }
+}
+
+.gold-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(218, 165, 32, 0.6) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: gold-shimmer 3s ease-in-out infinite;
+}
+
+.gold-leaf {
+  background: linear-gradient(135deg, #d4af37 0%, #f9e79f 25%, #d4af37 50%, #b8860b 75%, #d4af37 100%);
+  background-size: 200% 200%;
+  animation: gold-shimmer 3s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+/* Illuminated drop cap */
+.drop-cap::first-letter {
+  float: left;
+  font-family: 'UnifrakturCook', 'Cinzel Decorative', serif;
+  font-size: 3.5em;
+  line-height: 0.85;
+  margin: 0.1em 0.1em 0 0;
+  color: #c41e3a;
+  text-shadow:
+    2px 2px 0 #d4af37,
+    -1px -1px 0 #d4af37,
+    1px -1px 0 #d4af37,
+    -1px 1px 0 #d4af37;
+}
+
+/* Rubrication (red text for emphasis) */
+.rubricated {
+  color: #c41e3a;
+  font-weight: 600;
+}
+
+/* Illuminated border */
+.illuminated-border {
+  border: 3px solid transparent;
+  border-image: repeating-linear-gradient(
+    45deg,
+    #d4af37 0px,
+    #d4af37 10px,
+    #b8860b 10px,
+    #b8860b 20px,
+    #8b4513 20px,
+    #8b4513 30px
+  ) 1;
+  padding: 1rem;
+  position: relative;
+}
+
+.illuminated-border::before,
+.illuminated-border::after {
+  content: '✦';
+  position: absolute;
+  color: #d4af37;
+  font-size: 1.5rem;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+}
+
+.illuminated-border::before {
+  top: -0.75rem;
+  left: -0.75rem;
+}
+
+.illuminated-border::after {
+  bottom: -0.75rem;
+  right: -0.75rem;
+}
+
+/* Ornamental divider */
+.ornamental-divider {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #8b4513 20%, #d4af37 50%, #8b4513 80%, transparent);
+  position: relative;
+  margin: 2rem 0;
+}
+
+.ornamental-divider::before {
+  content: '❖';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: hsl(var(--background));
+  padding: 0 1rem;
+  color: #d4af37;
+  font-size: 1.2rem;
+  text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+}
+
+/* Page curl effect */
+@keyframes page-curl {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(15deg); }
+}
+
+.page-curl {
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
+}
+
+.page-curl:hover {
+  transform: rotateY(5deg);
+}
+
+/* Book page flip animation */
+@keyframes page-flip {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(90deg); }
+  100% { transform: rotateY(180deg); }
+}
+
+.page-flip {
+  animation: page-flip 0.8s ease-in-out;
+}
+
+/* Scroll unfurl animation */
+@keyframes scroll-unfurl {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+    opacity: 0;
+  }
+  100% {
+    transform: scaleY(1);
+    transform-origin: top;
+    opacity: 1;
+  }
+}
+
+.scroll-unfurl {
+  animation: scroll-unfurl 0.6s ease-out;
+}
+
+/* Ink spreading effect */
+@keyframes ink-spread {
+  0% {
+    box-shadow: inset 0 0 0 0 rgba(139, 69, 19, 0);
+  }
+  100% {
+    box-shadow: inset 0 0 20px 10px rgba(139, 69, 19, 0.1);
+  }
+}
+
+.ink-spread:focus {
+  animation: ink-spread 0.4s ease-out forwards;
+}
+
+/* Candle flicker */
+@keyframes candle-flicker {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(0.95); }
+}
+
+.candle-flicker {
+  animation: candle-flicker 2s ease-in-out infinite;
+}
+
+/* Hourglass sand animation */
+@keyframes hourglass-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(180deg); }
+}
+
+.hourglass-loading {
+  animation: hourglass-spin 2s ease-in-out infinite;
+}
+
+/* Leather texture */
+.leather-texture {
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(101, 67, 33, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(101, 67, 33, 0.05) 0%, transparent 50%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(139, 69, 19, 0.02) 0px,
+      rgba(139, 69, 19, 0.02) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  background-color: #5d4e37;
+}
+
+/* Ribbon bookmark */
+.ribbon-bookmark {
+  position: absolute;
+  top: 0;
+  right: 20px;
+  width: 30px;
+  height: 60px;
+  background: linear-gradient(135deg, #c41e3a 0%, #8b0000 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+  box-shadow:
+    2px 2px 5px rgba(0, 0, 0, 0.3),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Parchment curl on hover */
+@keyframes parchment-curl {
+  0% { transform: perspective(400px) rotateX(0deg); }
+  100% { transform: perspective(400px) rotateX(2deg); }
+}
+
+.parchment-curl:hover {
+  animation: parchment-curl 0.3s ease forwards;
+}
+
+/* Quill writing animation */
+@keyframes quill-write {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(5px) rotate(2deg); }
+  75% { transform: translateX(-5px) rotate(-2deg); }
+}
+
+.quill-writing {
+  animation: quill-write 1s ease-in-out infinite;
+}
+
+/* Medieval corner flourish - only for dialogs/panels */
+.corner-flourish-dialog {
+  position: relative;
+}
+
+.corner-flourish-dialog::before,
+.corner-flourish-dialog::after {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #d4af37;
+  opacity: 0.6;
+}
+
+.corner-flourish-dialog::before {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+  border-top-left-radius: 8px;
+}
+
+.corner-flourish-dialog::after {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+  border-bottom-right-radius: 8px;
+}
+
+/* Vellum texture */
+.vellum-texture {
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* Aging effect for old entries */
+.aged-parchment {
+  filter: sepia(0.3) contrast(0.9);
+  position: relative;
+}
+
+.aged-parchment::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 40%, rgba(139, 69, 19, 0.08), transparent 60%);
+  pointer-events: none;
+}
+
+/* Torch/candle progress indicator */
+.torch-progress {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background: #4a3728;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.torch-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b00 0%, #ffa500 50%, #ff6b00 100%);
+  background-size: 200% 100%;
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.6);
+  transition: width 0.3s ease;
+}
+
+/* Heraldic shield */
+.heraldic-shield {
+  width: 60px;
+  height: 70px;
+  background: linear-gradient(135deg, #8b0000 0%, #c41e3a 50%, #8b0000 100%);
+  clip-path: polygon(50% 0%, 100% 0, 100% 70%, 50% 100%, 0 70%, 0 0);
+  border: 2px solid #d4af37;
+  position: relative;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+
+.heraldic-shield::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  clip-path: polygon(50% 0%, 100% 0, 100% 70%, 50% 100%, 0 70%, 0 0);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 50%);
+}
+
+/* Bookshelf wood texture */
+.bookshelf-wood {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #5d4e37 0px,
+      #5d4e37 50px,
+      #654321 50px,
+      #654321 52px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(101, 67, 33, 0.3) 0px,
+      transparent 2px,
+      transparent 4px
+    );
+  background-color: #5d4e37;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.1);
+}
+
+/* Book spine on shelf */
+.book-spine {
+  width: 40px;
+  height: 200px;
+  background: linear-gradient(to right,
+    rgba(0, 0, 0, 0.2) 0%,
+    transparent 5%,
+    transparent 95%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  box-shadow:
+    2px 0 4px rgba(0, 0, 0, 0.3),
+    inset 1px 0 1px rgba(255, 255, 255, 0.2);
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.book-spine:hover {
+  transform: translateX(-5px) scale(1.05);
+}
+
+/* Scroll handle */
+.scroll-handle {
+  width: 12px;
+  height: 100px;
+  background: linear-gradient(to bottom, #654321 0%, #4a3728 50%, #654321 100%);
+  border-radius: 6px;
+  box-shadow:
+    inset -2px 0 3px rgba(0, 0, 0, 0.3),
+    inset 2px 0 3px rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+.scroll-handle::before,
+.scroll-handle::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle, #8b4513 0%, #654321 100%);
+  border-radius: 50%;
+  left: -2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.scroll-handle::before { top: -8px; }
+.scroll-handle::after { bottom: -8px; }
+
+/* ============================================ */
+/* Medieval Book Card Enhancements */
+/* ============================================ */
+
+/* Leather-bound book effect */
+.medieval-book {
+  position: relative;
+  background: linear-gradient(145deg, #5d4e37 0%, #4a3728 50%, #3d2f1f 100%);
+  border: 3px solid #3d2f1f;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(101, 67, 33, 0.3),
+    inset -2px -2px 8px rgba(0, 0, 0, 0.4),
+    inset 2px 2px 8px rgba(139, 115, 85, 0.2);
+}
+
+/* Book spine detail */
+.medieval-book::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background: linear-gradient(180deg,
+    rgba(0, 0, 0, 0.6) 0%,
+    transparent 5%,
+    transparent 95%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  border-right: 1px solid rgba(101, 67, 33, 0.5);
+  box-shadow: inset -2px 0 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Book cover leather texture with grain */
+.book-leather {
+  background-image:
+    radial-gradient(ellipse at 20% 30%, rgba(139, 115, 85, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(101, 67, 33, 0.15) 0%, transparent 50%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      rgba(80, 60, 40, 0.08) 1px,
+      transparent 2px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      rgba(80, 60, 40, 0.08) 1px,
+      transparent 2px,
+      transparent 6px
+    ),
+    /* Leather scratches and wear */
+    repeating-linear-gradient(
+      35deg,
+      transparent 0px,
+      transparent 15px,
+      rgba(0, 0, 0, 0.03) 15px,
+      rgba(0, 0, 0, 0.03) 16px
+    ),
+    repeating-linear-gradient(
+      125deg,
+      transparent 0px,
+      transparent 22px,
+      rgba(0, 0, 0, 0.02) 22px,
+      rgba(0, 0, 0, 0.02) 23px
+    );
+}
+
+/* Gilded edge decoration for book covers */
+.gilded-edge {
+  position: relative;
+}
+
+.gilded-edge::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 2px solid transparent;
+  border-image: linear-gradient(
+    135deg,
+    #d4af37 0%,
+    #f9e79f 25%,
+    #d4af37 50%,
+    #b8860b 75%,
+    #d4af37 100%
+  ) 1;
+  pointer-events: none;
+  opacity: 0.7;
+  box-shadow:
+    inset 0 0 8px rgba(212, 175, 55, 0.3),
+    0 0 4px rgba(212, 175, 55, 0.2);
+}
+
+/* Ornate corner brackets */
+.corner-brackets {
+  position: relative;
+}
+
+.corner-brackets::before,
+.corner-brackets::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #d4af37;
+  opacity: 0.8;
+  z-index: 10;
+}
+
+.corner-brackets::before {
+  top: 12px;
+  left: 12px;
+  border-right: none;
+  border-bottom: none;
+  background: radial-gradient(circle at 0% 0%, rgba(212, 175, 55, 0.2), transparent 70%);
+}
+
+.corner-brackets::after {
+  bottom: 12px;
+  right: 12px;
+  border-left: none;
+  border-top: none;
+  background: radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.2), transparent 70%);
+}
+
+/* Additional decorative brackets */
+.corner-brackets-full {
+  position: relative;
+}
+
+.corner-brackets-full::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 2px solid transparent;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.corner-brackets-full::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #d4af37;
+  opacity: 0.8;
+  z-index: 10;
+  top: 12px;
+  right: 12px;
+  border-left: none;
+  border-bottom: none;
+  background: radial-gradient(circle at 100% 0%, rgba(212, 175, 55, 0.2), transparent 70%);
+}
+
+/* Metal clasp/lock decoration */
+.book-clasp {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 48px;
+  background: linear-gradient(135deg, #8b7355 0%, #6d5d4b 50%, #5d4e37 100%);
+  border: 2px solid #4a3728;
+  border-radius: 4px;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.4);
+  z-index: 5;
+}
+
+.book-clasp::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, #3d2f1f 0%, #1a1410 100%);
+  border-radius: 50%;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.book-clasp::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 3px;
+  background: linear-gradient(90deg, #4a3728 0%, #6d5d4b 100%);
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Embossed title effect */
+.embossed-title {
+  text-shadow:
+    1px 1px 2px rgba(0, 0, 0, 0.8),
+    -1px -1px 1px rgba(212, 175, 55, 0.3),
+    0 0 8px rgba(212, 175, 55, 0.2);
+  color: #d4af37;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+/* Book page edge visible on side */
+.book-pages-edge {
+  position: absolute;
+  right: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 6px;
+  background: repeating-linear-gradient(
+    180deg,
+    #f5f5dc 0px,
+    #f5f5dc 1px,
+    #e8e8d0 1px,
+    #e8e8d0 2px
+  );
+  box-shadow:
+    inset 2px 0 4px rgba(0, 0, 0, 0.3),
+    -1px 0 2px rgba(0, 0, 0, 0.2);
+  border-left: 1px solid rgba(139, 115, 85, 0.3);
+}
+
+/* Worn/weathered book effect */
+.book-weathered {
+  position: relative;
+}
+
+.book-weathered::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(0, 0, 0, 0.15) 0%, transparent 30%),
+    radial-gradient(circle at 85% 80%, rgba(0, 0, 0, 0.12) 0%, transparent 25%),
+    radial-gradient(circle at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.08) 100%);
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* Raised 3D book effect */
+.book-3d-lift {
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.book-3d-lift:hover {
+  transform: translateY(-8px) rotateX(2deg);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.6),
+    0 8px 16px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(212, 175, 55, 0.4),
+    inset -2px -2px 8px rgba(0, 0, 0, 0.4),
+    inset 2px 2px 8px rgba(139, 115, 85, 0.3);
+}
+
+/* Inner page glow when hovering */
+.book-inner-glow {
+  position: relative;
+}
+
+.book-inner-glow:hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 235, 205, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  animation: gentle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Decorative book band/ribbon wrapper */
+.book-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 40px;
+  background: linear-gradient(180deg,
+    rgba(139, 0, 0, 0.8) 0%,
+    rgba(196, 30, 58, 0.9) 50%,
+    rgba(139, 0, 0, 0.8) 100%
+  );
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3);
+  z-index: 4;
+  border-top: 1px solid rgba(196, 30, 58, 0.5);
+  border-bottom: 1px solid rgba(139, 0, 0, 0.8);
+}
+
+/* Parchment content area inside book */
+.book-parchment-content {
+  background: linear-gradient(135deg, #f4e7d7 0%, #e8dcc8 100%);
+  border: 1px solid #d4c4a8;
+  box-shadow: inset 0 2px 8px rgba(139, 115, 85, 0.15);
 }

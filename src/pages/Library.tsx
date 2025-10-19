@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Plus, RefreshCcw, Settings } from 'lucide-react';
+import { Loader2, Plus, RefreshCcw, Settings, Grid3x3, BookOpen } from 'lucide-react';
 import { useMangaStore } from '@/stores/mangaStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { MangaGrid } from '@/components/library/MangaGrid';
+import { BookshelfView } from '@/components/library/BookshelfView';
 import { AddMangaDialog } from '@/components/library/AddMangaDialog';
 import { EditMangaDialog } from '@/components/library/EditMangaDialog';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
@@ -71,6 +72,12 @@ export function Library() {
 
   const { settings, loadSettings, updateSettings } = useSettingsStore();
 
+  const viewMode = settings.libraryViewMode || 'grid';
+
+  const handleViewModeChange = (mode: 'grid' | 'bookshelf') => {
+    updateSettings({ libraryViewMode: mode });
+  };
+
   useEffect(() => {
     loadAllManga();
     loadSettings();
@@ -130,12 +137,14 @@ export function Library() {
         }
         case 'recent':
         default:
-          return b.dateAdded - a.dateAdded;
+          // In bookshelf view, oldest to newest (left to right)
+          // In grid view, newest to oldest (top to bottom)
+          return viewMode === 'bookshelf' ? a.dateAdded - b.dateAdded : b.dateAdded - a.dateAdded;
       }
     });
 
     return list;
-  }, [filteredManga, sortOption]);
+  }, [filteredManga, sortOption, viewMode]);
 
   const handleAddManga = async (data: {
     title: string;
@@ -234,8 +243,13 @@ export function Library() {
   ];
 
   return (
-    <div className="min-h-screen bg-library-pattern text-stone-900 dark:text-stone-100">
-      <header className="sticky top-0 z-20 border-b-2 border-stone-700 bg-[hsl(var(--parchment))]/98 backdrop-blur-sm shadow-lg">
+    <div className={`min-h-screen text-stone-900 dark:text-stone-100 relative ${viewMode === 'grid' ? 'bg-library-pattern' : ''}`}>
+      <header className="sticky top-0 z-20 border-b-2 border-stone-700 bg-[hsl(var(--parchment))]/98 backdrop-blur-sm shadow-lg relative"
+        style={viewMode === 'bookshelf' ? {
+          backgroundColor: 'hsl(var(--parchment))',
+          borderColor: 'rgba(101, 67, 33, 0.6)'
+        } : undefined}
+      >
         <div className="container mx-auto px-3 py-3 sm:px-4 sm:py-4">
           {/* Compact Header - Single Line on Mobile */}
           <div className="flex items-center justify-between gap-2">
@@ -249,6 +263,19 @@ export function Library() {
             </div>
 
             <div className="flex items-center gap-1.5 sm:gap-2">
+              <Button
+                variant="outline"
+                onClick={() => handleViewModeChange(viewMode === 'grid' ? 'bookshelf' : 'grid')}
+                size="sm"
+                className="h-8 sm:h-9 px-2 sm:px-3"
+                title={viewMode === 'grid' ? 'Bookshelf View' : 'Grid View'}
+              >
+                {viewMode === 'grid' ? (
+                  <BookOpen className="h-4 w-4" />
+                ) : (
+                  <Grid3x3 className="h-4 w-4" />
+                )}
+              </Button>
               <Button onClick={() => setShowAddDialog(true)} size="sm" className="h-8 sm:h-9 px-2 sm:px-3">
                 <Plus className="h-4 w-4 sm:mr-1.5" />
                 <span className="hidden sm:inline text-xs">Inscribe</span>
@@ -341,13 +368,58 @@ export function Library() {
         </div>
       </header>
 
-      <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-6">
-        <MangaGrid
-          manga={sortedManga}
-          onRead={handleReadManga}
-          onDelete={handleDeleteManga}
-          onEdit={(mangaItem) => setEditingManga(mangaItem)}
-        />
+      {/* Dim firelight atmosphere - only in bookshelf view, entire page */}
+      {viewMode === 'bookshelf' && (
+        <>
+          {/* Dark library background */}
+          <div
+            className="fixed inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(25, 18, 12, 0.85) 0%, rgba(35, 25, 18, 0.9) 50%, rgba(25, 18, 12, 0.85) 100%)',
+              zIndex: 0
+            }}
+          />
+          {/* Warm candlelight glow */}
+          <div
+            className="fixed inset-0 pointer-events-none"
+            style={{
+              background: `
+                radial-gradient(ellipse at 20% 50%, rgba(255, 140, 0, 0.12), transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(255, 100, 0, 0.10), transparent 50%),
+                radial-gradient(ellipse at 50% 100%, rgba(255, 120, 0, 0.08), transparent 60%)
+              `,
+              animation: 'fireFlicker 3s ease-in-out infinite',
+              zIndex: 0
+            }}
+          />
+          {/* Vignette effect */}
+          <div
+            className="fixed inset-0 pointer-events-none"
+            style={{
+              background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.4) 100%)',
+              zIndex: 0
+            }}
+          />
+        </>
+      )}
+
+      <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 relative z-10">
+
+        {viewMode === 'grid' ? (
+          <MangaGrid
+            manga={sortedManga}
+            onRead={handleReadManga}
+            onDelete={handleDeleteManga}
+            onEdit={(mangaItem) => setEditingManga(mangaItem)}
+          />
+        ) : (
+          <BookshelfView
+            manga={sortedManga}
+            onRead={handleReadManga}
+            onDelete={handleDeleteManga}
+            onEdit={(mangaItem) => setEditingManga(mangaItem)}
+          />
+        )}
       </main>
 
       <AddMangaDialog

@@ -2,12 +2,14 @@ import { ReaderSettings } from './reader.types';
 
 export interface AppSettings extends ReaderSettings {
   theme: 'light' | 'dark' | 'auto';
+  medievalTheme: 'morning' | 'evening' | 'night' | 'auto';
   language: string;
   maxCacheSize: number; // in MB
   enableKeyboardShortcuts: boolean;
   enableTouchGestures: boolean;
   enablePreloading: boolean;
   maxConcurrentLoads: number;
+  libraryViewMode: 'grid' | 'bookshelf';
 }
 
 export interface KeyboardShortcut {

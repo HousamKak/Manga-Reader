@@ -17,12 +17,14 @@ const DEFAULT_SETTINGS: AppSettings = {
 
   // App settings
   theme: 'auto',
+  medievalTheme: 'auto',
   language: 'en',
   maxCacheSize: 500, // MB
   enableKeyboardShortcuts: true,
   enableTouchGestures: true,
   enablePreloading: true,
-  maxConcurrentLoads: 6
+  maxConcurrentLoads: 6,
+  libraryViewMode: 'grid'
 };
 
 interface SettingsStore {
