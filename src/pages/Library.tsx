@@ -240,7 +240,7 @@ export function Library() {
           {/* Compact Header - Single Line on Mobile */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <h1 className="font-display text-lg sm:text-2xl lg:text-3xl uppercase tracking-[0.15em] sm:tracking-[0.3em] text-stone-900 truncate">
+              <h1 className="font-display text-base sm:text-2xl lg:text-3xl uppercase tracking-[0.12em] sm:tracking-[0.25em] lg:tracking-[0.3em] text-stone-900">
                 The Grand Scriptorium
               </h1>
               <p className="text-[9px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-stone-600 mt-0.5">

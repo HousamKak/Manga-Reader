@@ -53,4 +53,5 @@ export interface DiscoveryResult {
   totalChapters?: number;
   totalPages?: number;
   error?: string;
+  firstPageNumber?: number;
 }

@@ -32,7 +32,7 @@ export function MangaCard({ manga, onRead, onDelete, onEdit, className }: MangaC
       )}
     >
       <div
-        className="group relative h-64 cursor-pointer overflow-hidden bg-gradient-to-br from-stone-500/20 via-amber-300/30 to-stone-700/30"
+        className="group relative h-48 cursor-pointer overflow-hidden bg-gradient-to-br from-stone-500/20 via-amber-300/30 to-stone-700/30"
         onClick={() => onRead(manga)}
         role="button"
         tabIndex={0}
@@ -94,8 +94,8 @@ export function MangaCard({ manga, onRead, onDelete, onEdit, className }: MangaC
         </div>
       </div>
 
-      <CardContent className="space-y-3 p-5">
-        <h3 className="font-display text-lg font-semibold uppercase tracking-[0.3em] text-stone-900 leading-snug break-words">
+      <CardContent className="space-y-2 p-3">
+        <h3 className="font-display text-base font-semibold uppercase tracking-[0.3em] text-stone-900 leading-snug break-words">
           {manga.title}
         </h3>
 

@@ -41,24 +41,30 @@ const ensureMangaDefaults = (manga: Manga): Manga => {
 export async function initDB(): Promise<IDBPDatabase<MangaReaderDB>> {
   if (db) return db;
 
-  db = await openDB<MangaReaderDB>('manga-reader-db', 1, {
-    upgrade(database) {
-      // Create manga store
-      const mangaStore = database.createObjectStore('manga', {
-        keyPath: 'id'
-      });
-      mangaStore.createIndex('by-date', 'dateAdded');
+  db = await openDB<MangaReaderDB>('manga-reader-db', 2, {
+    upgrade(database, oldVersion) {
+      // Create manga store if it doesn't exist
+      if (!database.objectStoreNames.contains('manga')) {
+        const mangaStore = database.createObjectStore('manga', {
+          keyPath: 'id'
+        });
+        mangaStore.createIndex('by-date', 'dateAdded');
+      }
 
-      // Create settings store
-      database.createObjectStore('settings', {
-        keyPath: 'id'
-      });
+      // Create settings store if it doesn't exist
+      if (!database.objectStoreNames.contains('settings')) {
+        database.createObjectStore('settings', {
+          keyPath: 'id'
+        });
+      }
 
-      // Create image cache store
-      const imageCacheStore = database.createObjectStore('imageCache', {
-        keyPath: 'url'
-      });
-      imageCacheStore.createIndex('by-timestamp', 'timestamp');
+      // Create image cache store if it doesn't exist
+      if (!database.objectStoreNames.contains('imageCache')) {
+        const imageCacheStore = database.createObjectStore('imageCache', {
+          keyPath: 'url'
+        });
+        imageCacheStore.createIndex('by-timestamp', 'timestamp');
+      }
     }
   });
 
