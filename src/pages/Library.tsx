@@ -74,7 +74,7 @@ export function Library() {
   useEffect(() => {
     loadAllManga();
     loadSettings();
-  }, []);
+  }, [loadAllManga, loadSettings]);
 
   const availableTags = useMemo(
     () =>

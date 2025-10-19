@@ -16,30 +16,44 @@ export function useImagePreloader(
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!enabled || urls.length === 0) return;
+    if (!enabled || urls.length === 0) {
+      setLoading(false);
+      return;
+    }
+
+    const urlsToLoad = urls.filter(
+      (url) => !loadedUrls.has(url) && !failedUrls.has(url)
+    );
+
+    if (urlsToLoad.length === 0) {
+      setLoading(false);
+      return;
+    }
 
     const abortController = new AbortController();
     setLoading(true);
 
     const load = async () => {
-      const urlsToLoad = urls.filter(
-        (url) => !loadedUrls.has(url) && !failedUrls.has(url)
-      );
-
       for (let i = 0; i < urlsToLoad.length; i += maxConcurrent) {
         if (abortController.signal.aborted) break;
 
         const batch = urlsToLoad.slice(i, i + maxConcurrent);
-        const results = await Promise.allSettled(
-          batch.map((url) => preloadImage(url))
-        );
+        const results = await Promise.allSettled(batch.map((url) => preloadImage(url)));
 
         results.forEach((result, index) => {
           const url = batch[index];
           if (result.status === 'fulfilled') {
-            setLoadedUrls((prev) => new Set(prev).add(url));
+            setLoadedUrls((prev) => {
+              const next = new Set(prev);
+              next.add(url);
+              return next;
+            });
           } else {
-            setFailedUrls((prev) => new Set(prev).add(url));
+            setFailedUrls((prev) => {
+              const next = new Set(prev);
+              next.add(url);
+              return next;
+            });
           }
         });
       }
@@ -52,7 +66,7 @@ export function useImagePreloader(
     return () => {
       abortController.abort();
     };
-  }, [urls, enabled, maxConcurrent]);
+  }, [urls, enabled, maxConcurrent, loadedUrls, failedUrls]);
 
   return {
     loadedUrls,

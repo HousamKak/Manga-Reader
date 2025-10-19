@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 export function useAutoHideUI(
   onHide: () => void,
@@ -7,7 +7,7 @@ export function useAutoHideUI(
 ) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     if (!enabled) return;
 
     if (timeoutRef.current) {
@@ -17,7 +17,7 @@ export function useAutoHideUI(
     timeoutRef.current = setTimeout(() => {
       onHide();
     }, delay);
-  };
+  }, [delay, enabled, onHide]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -39,7 +39,7 @@ export function useAutoHideUI(
         timeoutRef.current = null;
       }
     };
-  }, [enabled, delay, onHide]);
+  }, [enabled, delay, resetTimer]);
 
   return { resetTimer };
 }

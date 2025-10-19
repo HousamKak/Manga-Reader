@@ -37,19 +37,35 @@ A modern, ad-free manga reader built with React, TypeScript, and Vite. The app f
 
 ### Prerequisites
 - Node.js 18 or higher
-- npm (comes with Node.js)
+- npm (bundled with Node.js)
+- Supabase CLI (v1.200 or newer)
+- Docker Desktop (for running the local Supabase stack)
 
 ### Installation
 1. Clone the repository or download the project.
-2. Install dependencies:
+2. Copy the environment template and fill it with your Supabase credentials:
+   ```bash
+   cp .env.example .env
+   ```
+3. Install dependencies:
    ```bash
    npm install
    ```
-3. Start the development server:
+4. Start the local Supabase stack (one-time setup, requires Docker):
+   ```bash
+   supabase start
+   ```
+5. Apply the database schema and seed data:
+   ```bash
+   supabase db reset --seed
+   ```
+6. Start the development server:
    ```bash
    npm run dev
    ```
-4. Open `http://localhost:5173` in your browser.
+7. Open `http://localhost:5173` in your browser.
+
+> The Supabase CLI writes generated service credentials to `supabase/.env`. Copy the `anon` key from there into your `.env` file as `VITE_SUPABASE_ANON_KEY`. The API URL is `http://127.0.0.1:54321` by default, which matches the template.
 
 ### Useful Scripts
 - `npm run build` - type-check and generate a production build in `dist/`.
@@ -94,14 +110,25 @@ See `MANGA_SOURCES.md` for tips on confirming slug spelling.
 
 Touch gestures (swipe left and right) and mouse clicks are also supported for navigation when enabled in settings.
 
-## Data Storage and Privacy
-- Manga metadata, settings, and cached images live entirely in the browser (IndexedDB plus a localStorage mirror for fast settings reads).
-- No external servers, analytics, or tracking scripts are involved.
-- Clearing the browser storage removes all saved manga and preferences.
+## Database & Storage
+- Manga metadata, chapters, and pages are now persisted in Supabase (PostgreSQL) for reliable syncing across devices.
+- Application settings are stored in Supabase and mirrored to `localStorage` for fast reads and offline resilience.
+- Images remain cached locally in IndexedDB so reading performance is unaffected by network latency.
+- Row-Level Security policies limit access to the anonymous role (for the Docker stack) or the authenticated user if you enable Supabase Auth.
+- Clearing the browser storage removes cached images and the local settings mirror; clearing the Supabase database removes all manga metadata.
+
+## Deployment
+- Branch `main` deploys to GitHub Pages (production) via `.github/workflows/deploy.yml`. Configure repository secrets `PROD_SUPABASE_URL` and `PROD_SUPABASE_ANON_KEY` so the build can target the production Supabase instance.
+- Branch `develop` deploys to Cloudflare Pages (UAT) through `.github/workflows/deploy-cloudflare.yml`. Provide secrets `UAT_SUPABASE_URL`, `UAT_SUPABASE_ANON_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and set the repository variable `UAT_CLOUDFLARE_PROJECT` to the Cloudflare Pages project name (for example `manga-housamkak-uat`).
+- Both workflows run linting before builds; CI still covers the full lint/build/migration checks in `.github/workflows/ci.yml`.
 
 ## Project Structure
 
 ```
+supabase/
+  config.toml            # Local Supabase stack configuration
+  migrations/            # SQL migrations (schema, policies, triggers)
+  seed.sql               # Default settings seed
 src/
   components/
     library/      # Library UI (grid, cards, add dialog)

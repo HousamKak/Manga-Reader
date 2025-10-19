@@ -47,14 +47,14 @@ export function Reader() {
       loadManga(mangaId);
       setManga(mangaId);
     }
-  }, [mangaId]);
+  }, [mangaId, loadManga, setManga]);
 
   // Set current chapter
   useEffect(() => {
     if (chapterId) {
       setChapter(chapterId);
     }
-  }, [chapterId]);
+  }, [chapterId, setChapter]);
 
   // Discover pages if needed (only once per chapter)
   useEffect(() => {
@@ -66,7 +66,7 @@ export function Reader() {
         console.error('Failed to discover chapter pages:', error);
       });
     }
-  }, [chapterId, mangaId]); // Remove currentManga dependency to prevent re-renders
+  }, [chapterId, mangaId, discoverChapter]); // Remove currentManga dependency to prevent re-renders
 
   useEffect(() => {
     initialPageAppliedRef.current = false;
@@ -123,7 +123,7 @@ export function Reader() {
       currentChapterIndex: chapterIndex,
       totalChapters: currentManga.chapters.length
     });
-  }, [currentManga, chapterId, currentPage]);
+  }, [currentManga, chapterId, currentPage, setNavigation]);
 
   // Update reading progress
   useEffect(() => {
@@ -134,7 +134,7 @@ export function Reader() {
         updateReadingProgress(mangaId, chapter.id, currentPage);
       }
     }
-  }, [mangaId, chapterId, currentPage, currentManga]);
+  }, [mangaId, chapterId, currentPage, currentManga, updateReadingProgress]);
 
   // Auto-hide UI
   useAutoHideUI(() => setUIVisible(false), settings.autoHideDelay, settings.autoHideUI);
