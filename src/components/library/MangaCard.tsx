@@ -13,11 +13,6 @@ interface MangaCardProps {
   className?: string;
 }
 
-const statusColors: Record<Manga['status'], string> = {
-  plan: 'bg-amber-200/70 text-amber-900 border-amber-700/70',
-  reading: 'bg-emerald-200/70 text-emerald-900 border-emerald-700/70',
-  done: 'bg-slate-300/70 text-slate-900 border-slate-700/70'
-};
 
 export function MangaCard({ manga, onRead, onDelete, onEdit, className }: MangaCardProps) {
   const lastRead = manga.lastRead;

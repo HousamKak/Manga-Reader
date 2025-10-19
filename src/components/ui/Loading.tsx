@@ -1,5 +1,5 @@
 import { cn } from '@/utils/cn';
-import { Loader2, Hourglass } from 'lucide-react';
+import { Hourglass } from 'lucide-react';
 
 interface LoadingProps {
   size?: 'sm' | 'md' | 'lg';
