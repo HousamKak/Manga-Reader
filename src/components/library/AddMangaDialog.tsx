@@ -35,11 +35,12 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
     setError('');
 
     if (!mangaSlug) {
-      setError('Please enter a manga slug');
+      setError('Please enter a manga name');
       return;
     }
 
-    const cleanedSlug = mangaSlug.trim().toLowerCase();
+    // Convert spaces to dashes and clean the slug
+    const cleanedSlug = mangaSlug.trim().toLowerCase().replace(/\s+/g, '-');
 
     if (!isValidMangaSlug(cleanedSlug)) {
       setError('Invalid manga slug. Use only lowercase letters, numbers, and hyphens (e.g., my-gift-lvl-9999-unlimited-gacha)');
@@ -87,16 +88,16 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           <div>
             <label className="block text-sm font-medium mb-2">
-              Manga Slug
+              Manga Name
             </label>
             <Input
-              placeholder="my-gift-lvl-9999-unlimited-gacha"
+              placeholder="One Piece"
               value={mangaSlug}
               onChange={(e) => setMangaSlug(e.target.value)}
               disabled={loading}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Enter the manga slug as it appears in the URL (e.g., my-gift-lvl-9999-unlimited-gacha)
+              Enter the manga name (spaces will be converted to dashes automatically)
             </p>
             <p className="text-xs text-muted-foreground">
               Default source: manga.pics
@@ -105,10 +106,11 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label htmlFor="readingStatus" className="block text-sm font-medium mb-2">
                 Reading Status
               </label>
               <select
+                id="readingStatus"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as ReadingStatus)}
                 disabled={loading}
