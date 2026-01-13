@@ -76,13 +76,7 @@ export async function initDB(): Promise<IDBPDatabase<MangaReaderDB>> {
  */
 export async function saveManga(manga: Manga): Promise<void> {
   const database = await initDB();
-  const mangaToSave = ensureMangaDefaults(manga);
-  console.log("[StorageService] Saving manga to IndexedDB:", mangaToSave);
-  console.log(
-    "[StorageService] sourceId in saved manga:",
-    mangaToSave.sourceId
-  );
-  await database.put("manga", mangaToSave);
+  await database.put("manga", ensureMangaDefaults(manga));
 }
 
 /**
@@ -91,13 +85,7 @@ export async function saveManga(manga: Manga): Promise<void> {
 export async function getManga(id: string): Promise<Manga | undefined> {
   const database = await initDB();
   const manga = await database.get("manga", id);
-  const result = manga ? ensureMangaDefaults(manga) : undefined;
-  console.log("[StorageService] Retrieved manga:", result);
-  console.log(
-    "[StorageService] sourceId in retrieved manga:",
-    result?.sourceId
-  );
-  return result;
+  return manga ? ensureMangaDefaults(manga) : undefined;
 }
 
 /**

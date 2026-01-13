@@ -28,18 +28,6 @@ export async function discoverChapterCount(
 ): Promise<DiscoveryResult> {
   try {
     const source = sourceId ? getSourceById(sourceId) : null;
-    console.log(`[Discovery] discoverChapterCount called with:`, {
-      baseUrl,
-      mangaSlug,
-      sourceId,
-      source: source
-        ? {
-            name: source.name,
-            baseUrl: source.baseUrl,
-            patternType: source.patternType,
-          }
-        : null,
-    });
     const existenceCache = new Map<number, boolean>();
     let firstPageNumber: number | null = null;
 

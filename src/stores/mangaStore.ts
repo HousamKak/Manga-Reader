@@ -94,7 +94,6 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
   addManga: async (mangaData) => {
     set({ isLoading: true, error: null });
     try {
-      console.log("[Store] addManga received:", mangaData);
       const newManga: Manga = {
         ...mangaData,
         status: mangaData.status ?? "plan",
@@ -104,8 +103,6 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
         dateUpdated: Date.now(),
         chapters: [],
       };
-      console.log("[Store] Created manga object before saving:", newManga);
-      console.log("[Store] sourceId check:", newManga.sourceId);
 
       await saveManga(newManga);
       const manga = await getAllManga();
@@ -177,10 +174,6 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
     try {
       const manga = await getManga(mangaId);
       const sourceId = manga?.sourceId;
-      console.log(
-        `[Discovery] Starting discovery for "${urlSlug}" with baseUrl: ${baseUrl}, sourceId: ${sourceId}`
-      );
-      console.log("[Discovery] Full manga object:", manga);
 
       const chapters = await discoverAllChapters(
         baseUrl,
@@ -292,8 +285,6 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
 
       if (chapter.pages.length === 0) {
         const source = manga.sourceId ? getSourceById(manga.sourceId) : null;
-        console.log("[DiscoverChapter] manga.sourceId:", manga.sourceId);
-        console.log("[DiscoverChapter] Retrieved source:", source);
 
         const firstPageUrl = source
           ? buildSourcePageUrl({
