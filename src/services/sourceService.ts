@@ -44,8 +44,16 @@ export function saveSources(sources: MangaSource[]): void {
 export function getSourceById(sourceId: string): MangaSource | null {
   const sources = loadSources();
   const found = sources.find((s) => s.id === sourceId) || null;
-  console.log(`[SourceService] getSourceById("${sourceId}"):`, found ? { id: found.id, name: found.name, baseUrl: found.baseUrl } : 'NOT FOUND');
-  console.log(`[SourceService] Available source IDs:`, sources.map(s => s.id));
+  console.log(
+    `[SourceService] getSourceById("${sourceId}"):`,
+    found
+      ? { id: found.id, name: found.name, baseUrl: found.baseUrl }
+      : "NOT FOUND"
+  );
+  console.log(
+    `[SourceService] Available source IDs:`,
+    sources.map((s) => s.id)
+  );
   return found;
 }
 
