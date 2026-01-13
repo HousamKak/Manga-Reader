@@ -1,6 +1,6 @@
-import { buildMangaPageUrl, buildSourcePageUrl, parseMangaUrl } from '@/utils/urlBuilder';
+import { Chapter, DiscoveryResult, MangaUrlPattern, Page } from '@/types/manga.types';
 import { checkImageExists } from '@/utils/imageLoader';
-import { MangaUrlPattern, DiscoveryResult, Chapter, Page } from '@/types/manga.types';
+import { buildMangaPageUrl, buildSourcePageUrl, parseMangaUrl } from '@/utils/urlBuilder';
 import { getSourceById } from './sourceService';
 
 const PAGE_START_CANDIDATES = [0, 1, 2];
