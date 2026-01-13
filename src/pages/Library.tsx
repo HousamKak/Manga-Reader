@@ -1,31 +1,38 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Loader2, Plus, RefreshCcw, Settings, Grid3x3, BookOpen } from 'lucide-react';
-import { useMangaStore } from '@/stores/mangaStore';
-import { useSettingsStore } from '@/stores/settingsStore';
-import { MangaGrid } from '@/components/library/MangaGrid';
-import { BookshelfView } from '@/components/library/BookshelfView';
-import { AddMangaDialog } from '@/components/library/AddMangaDialog';
-import { EditMangaDialog } from '@/components/library/EditMangaDialog';
-import { SettingsPanel } from '@/components/settings/SettingsPanel';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { LoadingScreen } from '@/components/ui/Loading';
-import { Manga, ReadingStatus } from '@/types/manga.types';
+import { AddMangaDialog } from "@/components/library/AddMangaDialog";
+import { BookshelfView } from "@/components/library/BookshelfView";
+import { EditMangaDialog } from "@/components/library/EditMangaDialog";
+import { MangaGrid } from "@/components/library/MangaGrid";
+import { SettingsPanel } from "@/components/settings/SettingsPanel";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { LoadingScreen } from "@/components/ui/Loading";
+import { useMangaStore } from "@/stores/mangaStore";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { Manga, ReadingStatus } from "@/types/manga.types";
+import {
+  BookOpen,
+  Grid3x3,
+  Loader2,
+  Plus,
+  RefreshCcw,
+  Settings,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-type StatusFilter = 'all' | ReadingStatus;
-type SortOption = 'recent' | 'title' | 'status' | 'progress';
+type StatusFilter = "all" | ReadingStatus;
+type SortOption = "recent" | "title" | "status" | "progress";
 
 const statusLabels: Record<ReadingStatus, string> = {
-  plan: 'In The Scriptorium',
-  reading: 'Being Read',
-  done: 'Tale Completed'
+  plan: "In The Scriptorium",
+  reading: "Being Read",
+  done: "Tale Completed",
 };
 
 const statusOrder: Record<ReadingStatus, number> = {
   plan: 0,
   reading: 1,
-  done: 2
+  done: 2,
 };
 
 const extractChapterNumber = (chapterId: string | undefined): number | null => {
@@ -37,7 +44,7 @@ const extractChapterNumber = (chapterId: string | undefined): number | null => {
 };
 
 const computeProgress = (manga: Manga): number => {
-  if (manga.status === 'done') return 1;
+  if (manga.status === "done") return 1;
 
   const totalChapters = manga.totalChapters ?? manga.chapters.length;
   if (!totalChapters || totalChapters <= 0) return 0;
@@ -53,10 +60,10 @@ export function Library() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [discoveringManga, setDiscoveringManga] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortOption, setSortOption] = useState<SortOption>('recent');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOption, setSortOption] = useState<SortOption>("recent");
+  const [searchTerm, setSearchTerm] = useState("");
   const [editingManga, setEditingManga] = useState<Manga | null>(null);
 
   const {
@@ -67,14 +74,14 @@ export function Library() {
     addManga,
     removeManga,
     updateManga,
-    discoverMangaChapters
+    discoverMangaChapters,
   } = useMangaStore();
 
   const { settings, loadSettings, updateSettings } = useSettingsStore();
 
-  const viewMode = settings.libraryViewMode || 'grid';
+  const viewMode = settings.libraryViewMode || "grid";
 
-  const handleViewModeChange = (mode: 'grid' | 'bookshelf') => {
+  const handleViewModeChange = (mode: "grid" | "bookshelf") => {
     updateSettings({ libraryViewMode: mode });
   };
 
@@ -94,15 +101,17 @@ export function Library() {
   );
 
   useEffect(() => {
-    setSelectedTags((current) => current.filter((tag) => availableTags.includes(tag)));
+    setSelectedTags((current) =>
+      current.filter((tag) => availableTags.includes(tag))
+    );
   }, [availableTags]);
 
   const filteredManga = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     return manga.filter((item) => {
-      const status = item.status ?? 'plan';
-      const statusMatch = statusFilter === 'all' || status === statusFilter;
+      const status = item.status ?? "plan";
+      const statusMatch = statusFilter === "all" || status === statusFilter;
 
       const tags = Array.isArray(item.tags) ? item.tags : [];
       const tagsMatch =
@@ -124,22 +133,28 @@ export function Library() {
 
     list.sort((a, b) => {
       switch (sortOption) {
-        case 'title':
+        case "title":
           return a.title.localeCompare(b.title);
-        case 'status': {
+        case "status": {
           const statusDifference =
-            statusOrder[(a.status ?? 'plan')] - statusOrder[(b.status ?? 'plan')];
-          return statusDifference !== 0 ? statusDifference : a.title.localeCompare(b.title);
+            statusOrder[a.status ?? "plan"] - statusOrder[b.status ?? "plan"];
+          return statusDifference !== 0
+            ? statusDifference
+            : a.title.localeCompare(b.title);
         }
-        case 'progress': {
+        case "progress": {
           const progressDifference = computeProgress(b) - computeProgress(a);
-          return progressDifference !== 0 ? progressDifference : a.title.localeCompare(b.title);
+          return progressDifference !== 0
+            ? progressDifference
+            : a.title.localeCompare(b.title);
         }
-        case 'recent':
+        case "recent":
         default:
           // In bookshelf view, oldest to newest (left to right)
           // In grid view, newest to oldest (top to bottom)
-          return viewMode === 'bookshelf' ? a.dateAdded - b.dateAdded : b.dateAdded - a.dateAdded;
+          return viewMode === "bookshelf"
+            ? a.dateAdded - b.dateAdded
+            : b.dateAdded - a.dateAdded;
       }
     });
 
@@ -150,6 +165,7 @@ export function Library() {
     title: string;
     urlSlug: string;
     baseUrl: string;
+    sourceId?: string;
     autoDiscover: boolean;
     status: ReadingStatus;
     tags: string[];
@@ -158,15 +174,16 @@ export function Library() {
       title: data.title,
       urlSlug: data.urlSlug,
       baseUrl: data.baseUrl,
+      sourceId: data.sourceId,
       status: data.status,
       tags: data.tags,
-      chapters: []
+      chapters: [],
     });
 
     if (data.autoDiscover) {
       setDiscoveringManga(newManga.id);
-      discoverMangaChapters(newManga.id, data.baseUrl, data.urlSlug).finally(() =>
-        setDiscoveringManga(null)
+      discoverMangaChapters(newManga.id, data.baseUrl, data.urlSlug).finally(
+        () => setDiscoveringManga(null)
       );
     }
   };
@@ -177,18 +194,22 @@ export function Library() {
       return (
         [...mangaItem.chapters]
           .map((chapter) => chapter.chapterNumber)
-          .filter((num) => typeof num === 'number' && num > 0)
+          .filter((num) => typeof num === "number" && num > 0)
           .sort((a, b) => a - b)[0] || 1
       );
     };
 
-    const lastReadChapterNumber = extractChapterNumber(mangaItem.lastRead?.chapterId);
+    const lastReadChapterNumber = extractChapterNumber(
+      mangaItem.lastRead?.chapterId
+    );
     let targetChapterNumber = lastReadChapterNumber ?? firstAvailableChapter();
 
     if (
       mangaItem.chapters &&
       mangaItem.chapters.length > 0 &&
-      !mangaItem.chapters.some((chapter) => chapter.chapterNumber === targetChapterNumber)
+      !mangaItem.chapters.some(
+        (chapter) => chapter.chapterNumber === targetChapterNumber
+      )
     ) {
       targetChapterNumber = firstAvailableChapter();
     }
@@ -197,8 +218,8 @@ export function Library() {
       targetChapterNumber = 1;
     }
 
-    if (mangaItem.status === 'plan') {
-      updateManga(mangaItem.id, { status: 'reading' }).catch(() => {
+    if (mangaItem.status === "plan") {
+      updateManga(mangaItem.id, { status: "reading" }).catch(() => {
         // ignore transition errors; reading will continue regardless
       });
     }
@@ -221,10 +242,10 @@ export function Library() {
   };
 
   const handleResetFilters = () => {
-    setStatusFilter('all');
+    setStatusFilter("all");
     setSelectedTags([]);
-    setSearchTerm('');
-    setSortOption('recent');
+    setSearchTerm("");
+    setSortOption("recent");
   };
 
   const handleSaveMetadata = async (id: string, updates: Partial<Manga>) => {
@@ -236,19 +257,28 @@ export function Library() {
   }
 
   const statusOptions: { value: StatusFilter; label: string }[] = [
-    { value: 'all', label: 'All Tomes' },
-    { value: 'plan', label: statusLabels.plan },
-    { value: 'reading', label: statusLabels.reading },
-    { value: 'done', label: statusLabels.done }
+    { value: "all", label: "All Tomes" },
+    { value: "plan", label: statusLabels.plan },
+    { value: "reading", label: statusLabels.reading },
+    { value: "done", label: statusLabels.done },
   ];
 
   return (
-    <div className={`min-h-screen text-stone-900 dark:text-stone-100 relative ${viewMode === 'grid' ? 'bg-library-pattern' : ''}`}>
-      <header className="sticky top-0 z-20 border-b-2 border-stone-700 bg-[hsl(var(--parchment))]/98 backdrop-blur-sm shadow-lg relative"
-        style={viewMode === 'bookshelf' ? {
-          backgroundColor: 'hsl(var(--parchment))',
-          borderColor: 'rgba(101, 67, 33, 0.6)'
-        } : undefined}
+    <div
+      className={`min-h-screen text-stone-900 dark:text-stone-100 relative ${
+        viewMode === "grid" ? "bg-library-pattern" : ""
+      }`}
+    >
+      <header
+        className="sticky top-0 z-20 border-b-2 border-stone-700 bg-[hsl(var(--parchment))]/98 backdrop-blur-sm shadow-lg relative"
+        style={
+          viewMode === "bookshelf"
+            ? {
+                backgroundColor: "hsl(var(--parchment))",
+                borderColor: "rgba(101, 67, 33, 0.6)",
+              }
+            : undefined
+        }
       >
         <div className="container mx-auto px-3 py-3 sm:px-4 sm:py-4">
           {/* Compact Header - Single Line on Mobile */}
@@ -265,22 +295,35 @@ export function Library() {
             <div className="flex items-center gap-1.5 sm:gap-2">
               <Button
                 variant="outline"
-                onClick={() => handleViewModeChange(viewMode === 'grid' ? 'bookshelf' : 'grid')}
+                onClick={() =>
+                  handleViewModeChange(
+                    viewMode === "grid" ? "bookshelf" : "grid"
+                  )
+                }
                 size="sm"
                 className="h-8 sm:h-9 px-2 sm:px-3"
-                title={viewMode === 'grid' ? 'Bookshelf View' : 'Grid View'}
+                title={viewMode === "grid" ? "Bookshelf View" : "Grid View"}
               >
-                {viewMode === 'grid' ? (
+                {viewMode === "grid" ? (
                   <BookOpen className="h-4 w-4" />
                 ) : (
                   <Grid3x3 className="h-4 w-4" />
                 )}
               </Button>
-              <Button onClick={() => setShowAddDialog(true)} size="sm" className="h-8 sm:h-9 px-2 sm:px-3">
+              <Button
+                onClick={() => setShowAddDialog(true)}
+                size="sm"
+                className="h-8 sm:h-9 px-2 sm:px-3"
+              >
                 <Plus className="h-4 w-4 sm:mr-1.5" />
                 <span className="hidden sm:inline text-xs">Inscribe</span>
               </Button>
-              <Button variant="outline" onClick={() => setShowSettings(true)} size="sm" className="h-8 sm:h-9 px-2 sm:px-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowSettings(true)}
+                size="sm"
+                className="h-8 sm:h-9 px-2 sm:px-3"
+              >
                 <Settings className="h-4 w-4 sm:mr-1.5" />
                 <span className="hidden sm:inline text-xs">Tools</span>
               </Button>
@@ -294,13 +337,15 @@ export function Library() {
               {statusOptions.map((option) => (
                 <Button
                   key={option.value}
-                  variant={statusFilter === option.value ? 'default' : 'outline'}
+                  variant={
+                    statusFilter === option.value ? "default" : "outline"
+                  }
                   size="sm"
                   onClick={() => setStatusFilter(option.value)}
                   className={`h-7 px-2.5 text-[10px] sm:text-xs whitespace-nowrap flex-shrink-0 ${
                     statusFilter === option.value
-                      ? 'shadow-md shadow-amber-700/30'
-                      : 'border-stone-600 text-stone-700 hover:border-amber-600 hover:text-amber-900'
+                      ? "shadow-md shadow-amber-700/30"
+                      : "border-stone-600 text-stone-700 hover:border-amber-600 hover:text-amber-900"
                   }`}
                 >
                   {option.label}
@@ -318,7 +363,9 @@ export function Library() {
               />
               <select
                 value={sortOption}
-                onChange={(event) => setSortOption(event.target.value as SortOption)}
+                onChange={(event) =>
+                  setSortOption(event.target.value as SortOption)
+                }
                 className="h-8 rounded border-2 border-stone-700 bg-[hsl(var(--parchment))] px-2 text-[10px] sm:text-xs uppercase tracking-[0.15em] text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-600 flex-shrink-0"
                 aria-label="Sort manga"
               >
@@ -327,7 +374,12 @@ export function Library() {
                 <option value="status">Status</option>
                 <option value="progress">Progress</option>
               </select>
-              <Button variant="ghost" size="sm" onClick={handleResetFilters} className="h-8 px-2 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResetFilters}
+                className="h-8 px-2 flex-shrink-0"
+              >
                 <RefreshCcw className="h-3.5 w-3.5" />
               </Button>
             </div>
@@ -344,8 +396,8 @@ export function Library() {
                       onClick={() => handleTagToggle(tag)}
                       className={`rounded-full border px-2 py-0.5 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] transition whitespace-nowrap flex-shrink-0 ${
                         selected
-                          ? 'border-amber-700 bg-amber-300 text-amber-900 shadow-inner'
-                          : 'border-stone-500 bg-stone-200/70 text-stone-700 hover:border-amber-600 hover:bg-amber-200 hover:text-amber-900'
+                          ? "border-amber-700 bg-amber-300 text-amber-900 shadow-inner"
+                          : "border-stone-500 bg-stone-200/70 text-stone-700 hover:border-amber-600 hover:bg-amber-200 hover:text-amber-900"
                       }`}
                     >
                       {tag}
@@ -360,7 +412,8 @@ export function Library() {
               <div className="flex items-center gap-2 rounded border border-amber-700 bg-amber-200/70 px-2.5 py-1.5 text-xs font-semibold text-amber-900">
                 <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
                 <span className="text-[10px] sm:text-xs">
-                  Discovering... {discoveryProgress.current}/{discoveryProgress.total}
+                  Discovering... {discoveryProgress.current}/
+                  {discoveryProgress.total}
                 </span>
               </div>
             )}
@@ -369,14 +422,15 @@ export function Library() {
       </header>
 
       {/* Dim firelight atmosphere - only in bookshelf view, entire page */}
-      {viewMode === 'bookshelf' && (
+      {viewMode === "bookshelf" && (
         <>
           {/* Dark library background */}
           <div
             className="fixed inset-0 pointer-events-none"
             style={{
-              background: 'linear-gradient(to bottom, rgba(25, 18, 12, 0.85) 0%, rgba(35, 25, 18, 0.9) 50%, rgba(25, 18, 12, 0.85) 100%)',
-              zIndex: 0
+              background:
+                "linear-gradient(to bottom, rgba(25, 18, 12, 0.85) 0%, rgba(35, 25, 18, 0.9) 50%, rgba(25, 18, 12, 0.85) 100%)",
+              zIndex: 0,
             }}
           />
           {/* Warm candlelight glow */}
@@ -388,24 +442,24 @@ export function Library() {
                 radial-gradient(ellipse at 80% 50%, rgba(255, 100, 0, 0.10), transparent 50%),
                 radial-gradient(ellipse at 50% 100%, rgba(255, 120, 0, 0.08), transparent 60%)
               `,
-              animation: 'fireFlicker 3s ease-in-out infinite',
-              zIndex: 0
+              animation: "fireFlicker 3s ease-in-out infinite",
+              zIndex: 0,
             }}
           />
           {/* Vignette effect */}
           <div
             className="fixed inset-0 pointer-events-none"
             style={{
-              background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.4) 100%)',
-              zIndex: 0
+              background:
+                "radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.4) 100%)",
+              zIndex: 0,
             }}
           />
         </>
       )}
 
       <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 relative z-10">
-
-        {viewMode === 'grid' ? (
+        {viewMode === "grid" ? (
           <MangaGrid
             manga={sortedManga}
             onRead={handleReadManga}

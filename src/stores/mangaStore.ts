@@ -174,6 +174,9 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
     try {
       const manga = await getManga(mangaId);
       const sourceId = manga?.sourceId;
+      console.log(
+        `[Discovery] Starting discovery for "${urlSlug}" with baseUrl: ${baseUrl}, sourceId: ${sourceId}`
+      );
 
       const chapters = await discoverAllChapters(
         baseUrl,

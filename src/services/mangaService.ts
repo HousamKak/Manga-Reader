@@ -1,7 +1,16 @@
-import { Chapter, DiscoveryResult, MangaUrlPattern, Page } from '@/types/manga.types';
-import { checkImageExists } from '@/utils/imageLoader';
-import { buildMangaPageUrl, buildSourcePageUrl, parseMangaUrl } from '@/utils/urlBuilder';
-import { getSourceById } from './sourceService';
+import {
+  Chapter,
+  DiscoveryResult,
+  MangaUrlPattern,
+  Page,
+} from "@/types/manga.types";
+import { checkImageExists } from "@/utils/imageLoader";
+import {
+  buildMangaPageUrl,
+  buildSourcePageUrl,
+  parseMangaUrl,
+} from "@/utils/urlBuilder";
+import { getSourceById } from "./sourceService";
 
 const PAGE_START_CANDIDATES = [0, 1, 2];
 
@@ -19,6 +28,18 @@ export async function discoverChapterCount(
 ): Promise<DiscoveryResult> {
   try {
     const source = sourceId ? getSourceById(sourceId) : null;
+    console.log(`[Discovery] discoverChapterCount called with:`, {
+      baseUrl,
+      mangaSlug,
+      sourceId,
+      source: source
+        ? {
+            name: source.name,
+            baseUrl: source.baseUrl,
+            patternType: source.patternType,
+          }
+        : null,
+    });
     const existenceCache = new Map<number, boolean>();
     let firstPageNumber: number | null = null;
 
@@ -31,15 +52,33 @@ export async function discoverChapterCount(
 
       const candidates =
         firstPageNumber !== null
-          ? [firstPageNumber, ...PAGE_START_CANDIDATES.filter((value) => value !== firstPageNumber)]
+          ? [
+              firstPageNumber,
+              ...PAGE_START_CANDIDATES.filter(
+                (value) => value !== firstPageNumber
+              ),
+            ]
           : PAGE_START_CANDIDATES;
 
       for (const pageNumber of candidates) {
         const testUrl = source
           ? buildSourcePageUrl({ source, mangaSlug, chapterNumber, pageNumber })
-          : buildMangaPageUrl({ baseUrl, mangaSlug, chapterNumber, pageNumber });
+          : buildMangaPageUrl({
+              baseUrl,
+              mangaSlug,
+              chapterNumber,
+              pageNumber,
+            });
+
+        console.log(
+          `[Discovery] Testing chapter ${chapterNumber}, page ${pageNumber}:`,
+          testUrl
+        );
 
         if (await checkImageExists(testUrl)) {
+          console.log(
+            `[Discovery] ✓ Found chapter ${chapterNumber}, page ${pageNumber}`
+          );
           firstPageNumber = pageNumber;
           existenceCache.set(chapterNumber, true);
           return true;
@@ -79,7 +118,7 @@ export async function discoverChapterCount(
     if (lastValidChapter === 0) {
       return {
         success: false,
-        error: 'No chapters found'
+        error: "No chapters found",
       };
     }
 
@@ -99,12 +138,12 @@ export async function discoverChapterCount(
     return {
       success: true,
       totalChapters: lastValidChapter,
-      firstPageNumber: firstPageNumber ?? 0
+      firstPageNumber: firstPageNumber ?? 0,
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -128,8 +167,18 @@ export async function discoverPageCount(
     const detectFirstPageNumber = async (): Promise<number | null> => {
       for (const candidate of PAGE_START_CANDIDATES) {
         const testUrl = source
-          ? buildSourcePageUrl({ source, mangaSlug, chapterNumber, pageNumber: candidate })
-          : buildMangaPageUrl({ baseUrl, mangaSlug, chapterNumber, pageNumber: candidate });
+          ? buildSourcePageUrl({
+              source,
+              mangaSlug,
+              chapterNumber,
+              pageNumber: candidate,
+            })
+          : buildMangaPageUrl({
+              baseUrl,
+              mangaSlug,
+              chapterNumber,
+              pageNumber: candidate,
+            });
 
         if (await checkImageExists(testUrl)) {
           existenceCache.set(candidate, true);
@@ -144,7 +193,7 @@ export async function discoverPageCount(
     if (firstPageNumber === null) {
       return {
         success: false,
-        error: 'No pages found'
+        error: "No pages found",
       };
     }
 
@@ -157,8 +206,18 @@ export async function discoverPageCount(
 
       const actualPageNumber = firstPageNumber + relativeIndex;
       const testUrl = source
-        ? buildSourcePageUrl({ source, mangaSlug, chapterNumber, pageNumber: actualPageNumber })
-        : buildMangaPageUrl({ baseUrl, mangaSlug, chapterNumber, pageNumber: actualPageNumber });
+        ? buildSourcePageUrl({
+            source,
+            mangaSlug,
+            chapterNumber,
+            pageNumber: actualPageNumber,
+          })
+        : buildMangaPageUrl({
+            baseUrl,
+            mangaSlug,
+            chapterNumber,
+            pageNumber: actualPageNumber,
+          });
 
       const exists = await checkImageExists(testUrl);
       existenceCache.set(actualPageNumber, exists);
@@ -208,12 +267,12 @@ export async function discoverPageCount(
     return {
       success: true,
       totalPages,
-      firstPageNumber
+      firstPageNumber,
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -230,10 +289,15 @@ export async function discoverAllChapters(
   onProgress?: (current: number, total: number) => void,
   sourceId?: string
 ): Promise<Chapter[]> {
-  const chapterResult = await discoverChapterCount(baseUrl, mangaSlug, 4096, sourceId);
+  const chapterResult = await discoverChapterCount(
+    baseUrl,
+    mangaSlug,
+    4096,
+    sourceId
+  );
 
   if (!chapterResult.success || !chapterResult.totalChapters) {
-    throw new Error(chapterResult.error || 'Failed to discover chapters');
+    throw new Error(chapterResult.error || "Failed to discover chapters");
   }
 
   const chapters: Chapter[] = [];
@@ -247,7 +311,7 @@ export async function discoverAllChapters(
       totalPages: undefined, // Will be discovered on-demand
       pages: [], // Empty initially
       isDiscovered: false, // Not fully discovered yet
-      progress: 0
+      progress: 0,
     });
 
     if (onProgress) {
@@ -270,10 +334,16 @@ export async function discoverChapterPages(
   sourceId?: string
 ): Promise<Page[]> {
   const source = sourceId ? getSourceById(sourceId) : null;
-  const pageResult = await discoverPageCount(baseUrl, mangaSlug, chapterNumber, 512, sourceId);
+  const pageResult = await discoverPageCount(
+    baseUrl,
+    mangaSlug,
+    chapterNumber,
+    512,
+    sourceId
+  );
 
   if (!pageResult.success || !pageResult.totalPages) {
-    throw new Error(pageResult.error || 'Failed to discover pages');
+    throw new Error(pageResult.error || "Failed to discover pages");
   }
 
   const pages: Page[] = [];
@@ -288,10 +358,20 @@ export async function discoverChapterPages(
       chapterId: `${mangaId}-ch${chapterNumber}`,
       pageNumber: j,
       imageUrl: source
-        ? buildSourcePageUrl({ source, mangaSlug, chapterNumber, pageNumber: actualPageNumber })
-        : buildMangaPageUrl({ baseUrl, mangaSlug, chapterNumber, pageNumber: actualPageNumber }),
+        ? buildSourcePageUrl({
+            source,
+            mangaSlug,
+            chapterNumber,
+            pageNumber: actualPageNumber,
+          })
+        : buildMangaPageUrl({
+            baseUrl,
+            mangaSlug,
+            chapterNumber,
+            pageNumber: actualPageNumber,
+          }),
       isLoaded: false,
-      isCached: false
+      isCached: false,
     });
   }
 
@@ -330,10 +410,20 @@ export function generateChapterPages(
       chapterId: `${mangaId}-ch${chapterNumber}`,
       pageNumber: i,
       imageUrl: source
-        ? buildSourcePageUrl({ source, mangaSlug, chapterNumber, pageNumber: actualPageNumber })
-        : buildMangaPageUrl({ baseUrl, mangaSlug, chapterNumber, pageNumber: actualPageNumber }),
+        ? buildSourcePageUrl({
+            source,
+            mangaSlug,
+            chapterNumber,
+            pageNumber: actualPageNumber,
+          })
+        : buildMangaPageUrl({
+            baseUrl,
+            mangaSlug,
+            chapterNumber,
+            pageNumber: actualPageNumber,
+          }),
       isLoaded: false,
-      isCached: false
+      isCached: false,
     });
   }
 
