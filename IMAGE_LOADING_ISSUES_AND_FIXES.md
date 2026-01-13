@@ -3,29 +3,36 @@
 ## Issues Identified
 
 ### 1. **Blur Effect Persists/Images Load Blurry**
+
 **Problem:** The ImageViewer applies a blur effect while loading (`blur-md`) but the transition timing may not align with actual image load completion.
 
 **Root Cause:**
+
 - `loading` state transitions on `onLoad` event, but the image may not have fully rendered
 - Browser lazy loading (`loading="lazy"`) can delay actual rendering
 - Transition duration (500ms) may be too long/short
 
 ### 2. **Unreliable Image Loading**
+
 **Problem:** Images don't always load, especially when navigating quickly.
 
 **Root Causes:**
+
 - **Race conditions:** Multiple re-renders trigger new image load attempts
 - **Preloader hook inefficiency:** `useImagePreloader` doesn't cancel in-flight requests when URLs change
 - **No retry mechanism:** Failed images aren't retried
 - **Cache misses:** IndexedDB cache isn't being utilized in the actual image rendering
 
 ### 3. **Lazy Loading Conflicts**
+
 **Problem:** Browser native lazy loading conflicts with custom preloading logic.
 
 **Issue:** `loading="lazy"` in ImageViewer defers loading until image is near viewport, but `useImagePreloader` tries to load ahead. These work against each other.
 
 ### 4. **Memory & Performance Issues**
+
 **Problems:**
+
 - Image cache in IndexedDB exists but is never actually used
 - Preloader doesn't clean up properly
 - No debouncing on rapid page changes
@@ -45,7 +52,15 @@
 // 4. Force image decode before showing
 // 5. Use cached blob URLs when available
 
-export function ImageViewer({ src, alt, imageFit, zoomLevel = 1, onLoad, onError, className }: ImageViewerProps) {
+export function ImageViewer({
+  src,
+  alt,
+  imageFit,
+  zoomLevel = 1,
+  onLoad,
+  onError,
+  className,
+}: ImageViewerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
@@ -56,16 +71,16 @@ export function ImageViewer({ src, alt, imageFit, zoomLevel = 1, onLoad, onError
   // Check cache first
   useEffect(() => {
     let cancelled = false;
-    
+
     const loadImage = async () => {
       setLoading(true);
       setError(false);
-      
+
       // Try to get from cache first
       try {
         const cached = await getCachedImage(src);
         if (cancelled) return;
-        
+
         if (cached) {
           const blobUrl = URL.createObjectURL(cached);
           setDisplaySrc(blobUrl);
@@ -74,12 +89,12 @@ export function ImageViewer({ src, alt, imageFit, zoomLevel = 1, onLoad, onError
       } catch (e) {
         // Cache miss, use original URL
       }
-      
+
       setDisplaySrc(src);
     };
-    
+
     loadImage();
-    
+
     return () => {
       cancelled = true;
     };
@@ -87,14 +102,14 @@ export function ImageViewer({ src, alt, imageFit, zoomLevel = 1, onLoad, onError
 
   const handleLoad = async () => {
     // Force decode before removing blur
-    if (imgRef.current && 'decode' in imgRef.current) {
+    if (imgRef.current && "decode" in imgRef.current) {
       try {
         await imgRef.current.decode();
       } catch {
         // Decode failed, continue anyway
       }
     }
-    
+
     // Small delay to ensure rendering
     requestAnimationFrame(() => {
       setLoading(false);
@@ -106,7 +121,7 @@ export function ImageViewer({ src, alt, imageFit, zoomLevel = 1, onLoad, onError
     if (retryCount < MAX_RETRIES) {
       // Retry with exponential backoff
       setTimeout(() => {
-        setRetryCount(c => c + 1);
+        setRetryCount((c) => c + 1);
         setDisplaySrc(src + `?retry=${retryCount + 1}`);
       }, Math.pow(2, retryCount) * 1000);
     } else {
@@ -126,8 +141,8 @@ export function ImageViewer({ src, alt, imageFit, zoomLevel = 1, onLoad, onError
       alt={alt}
       className={cn(
         fitClass,
-        'block transition-all duration-200',
-        loading ? 'blur-sm opacity-80' : 'blur-0 opacity-100'
+        "block transition-all duration-200",
+        loading ? "blur-sm opacity-80" : "blur-0 opacity-100"
       )}
       onLoad={handleLoad}
       onError={handleError}
@@ -144,7 +159,10 @@ export function ImageViewer({ src, alt, imageFit, zoomLevel = 1, onLoad, onError
 **Replace useImagePreloader.ts:**
 
 ```typescript
-export function useImagePreloader(urls: string[], options: PreloadOptions = {}) {
+export function useImagePreloader(
+  urls: string[],
+  options: PreloadOptions = {}
+) {
   const { enabled = true, maxConcurrent = 6 } = options;
   const [loadedUrls, setLoadedUrls] = useState<Set<string>>(new Set());
   const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
@@ -158,12 +176,15 @@ export function useImagePreloader(urls: string[], options: PreloadOptions = {}) 
     // Cancel previous loads
     abortControllerRef.current?.abort();
     abortControllerRef.current = new AbortController();
-    
+
     setLoading(true);
 
     const load = async () => {
       const urlsToLoad = urls.filter(
-        (url) => !loadedUrls.has(url) && !failedUrls.has(url) && !loadingUrlsRef.current.has(url)
+        (url) =>
+          !loadedUrls.has(url) &&
+          !failedUrls.has(url) &&
+          !loadingUrlsRef.current.has(url)
       );
 
       if (urlsToLoad.length === 0) {
@@ -172,13 +193,13 @@ export function useImagePreloader(urls: string[], options: PreloadOptions = {}) 
       }
 
       // Mark as loading
-      urlsToLoad.forEach(url => loadingUrlsRef.current.add(url));
+      urlsToLoad.forEach((url) => loadingUrlsRef.current.add(url));
 
       for (let i = 0; i < urlsToLoad.length; i += maxConcurrent) {
         if (abortControllerRef.current?.signal.aborted) break;
 
         const batch = urlsToLoad.slice(i, i + maxConcurrent);
-        
+
         // Preload AND cache in parallel
         const results = await Promise.allSettled(
           batch.map(async (url) => {
@@ -200,8 +221,8 @@ export function useImagePreloader(urls: string[], options: PreloadOptions = {}) 
         results.forEach((result, index) => {
           const url = batch[index];
           loadingUrlsRef.current.delete(url);
-          
-          if (result.status === 'fulfilled') {
+
+          if (result.status === "fulfilled") {
             setLoadedUrls((prev) => new Set(prev).add(url));
           } else {
             setFailedUrls((prev) => new Set(prev).add(url));
@@ -217,16 +238,16 @@ export function useImagePreloader(urls: string[], options: PreloadOptions = {}) 
     return () => {
       abortControllerRef.current?.abort();
       // Clear loading refs
-      urls.forEach(url => loadingUrlsRef.current.delete(url));
+      urls.forEach((url) => loadingUrlsRef.current.delete(url));
     };
-  }, [urls.join(','), enabled, maxConcurrent]); // Use join for stable comparison
+  }, [urls.join(","), enabled, maxConcurrent]); // Use join for stable comparison
 
   return {
     loadedUrls,
     failedUrls,
     loading,
     isLoaded: (url: string) => loadedUrls.has(url),
-    hasFailed: (url: string) => failedUrls.has(url)
+    hasFailed: (url: string) => failedUrls.has(url),
   };
 }
 ```
@@ -257,11 +278,11 @@ const debouncedSetPage = useMemo(
 ```typescript
 class ImageErrorBoundary extends React.Component {
   state = { hasError: false };
-  
+
   static getDerivedStateFromError() {
     return { hasError: true };
   }
-  
+
   render() {
     if (this.state.hasError) {
       return <div>Failed to render image</div>;
@@ -276,8 +297,8 @@ class ImageErrorBoundary extends React.Component {
 1. **High Priority:**
    - Fix 1: ImageViewer improvements (removes blur issues, adds retry)
    - Fix 2: Better preloader with caching
-   
 2. **Medium Priority:**
+
    - Fix 3: Debounced navigation
    - Fix 4: Utilize cache in rendering
 
@@ -287,6 +308,7 @@ class ImageErrorBoundary extends React.Component {
 ## Testing Checklist
 
 After implementing fixes:
+
 - [ ] Images load without blur on first view
 - [ ] Previously loaded images display instantly
 - [ ] Rapid page navigation doesn't break loading

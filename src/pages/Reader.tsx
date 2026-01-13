@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMangaStore } from '@/stores/mangaStore';
 import { useReaderStore } from '@/stores/readerStore';
@@ -8,6 +8,7 @@ import { useSwipeGestures } from '@/hooks/useSwipeGestures';
 import { useAutoHideUI } from '@/hooks/useAutoHideUI';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { ImageViewer } from '@/components/reader/ImageViewer';
+import { ImageErrorBoundary } from '@/components/reader/ImageErrorBoundary';
 import { ReaderToolbar } from '@/components/reader/ReaderToolbar';
 import { PageControls } from '@/components/reader/PageControls';
 import { ChapterSelector } from '@/components/reader/ChapterSelector';
@@ -40,6 +41,15 @@ export function Reader() {
     setNavigation
   } = useReaderStore();
   const { settings, updateSettings } = useSettingsStore();
+
+  // Debounced setPage to prevent rapid state updates during fast navigation
+  const debouncedSetPage = useMemo(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    return (page: number) => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => setPage(page), 50);
+    };
+  }, [setPage]);
 
   // Load manga data
   useEffect(() => {
@@ -254,17 +264,17 @@ export function Reader() {
           toggleUI();
           break;
         case 'firstPage':
-          setPage(0); // First page is 0
+          debouncedSetPage(0); // First page is 0
           break;
         case 'lastPage':
           if (currentChapter) {
             const totalPages = currentChapter.totalPages || currentChapter.pages.length;
-            setPage(totalPages - 1); // Last page is totalPages - 1 (0-indexed)
+            debouncedSetPage(totalPages - 1); // Last page is totalPages - 1 (0-indexed)
           }
           break;
       }
     },
-    [navigation, nextPage, previousPage, toggleUI, setPage, currentChapter]
+    [navigation, nextPage, previousPage, toggleUI, debouncedSetPage, currentChapter]
   );
 
   useKeyboardShortcuts(handleShortcutAction, settings.enableKeyboardShortcuts);
@@ -392,13 +402,15 @@ export function Reader() {
             {currentChapter.pages.length > 0 ? (
               currentChapter.pages.map((page) => (
                 <div key={page.id} className="w-full flex justify-center items-center">
-                  <ImageViewer
-                    src={page.imageUrl}
-                    alt={`Page ${page.pageNumber + 1}`}
-                    imageFit={settings.imageFit}
-                    zoomLevel={settings.defaultZoom}
-                    className="w-full"
-                  />
+                  <ImageErrorBoundary>
+                    <ImageViewer
+                      src={page.imageUrl}
+                      alt={`Page ${page.pageNumber + 1}`}
+                      imageFit={settings.imageFit}
+                      zoomLevel={settings.defaultZoom}
+                      className="w-full"
+                    />
+                  </ImageErrorBoundary>
                 </div>
               ))
             ) : (
@@ -410,12 +422,14 @@ export function Reader() {
         ) : (
           <div className="flex items-center justify-center min-h-[calc(100vh-160px)]">
             {currentPageData ? (
-              <ImageViewer
-                src={currentPageData.imageUrl}
-                alt={`Page ${currentPage + 1}`}
-                imageFit={settings.imageFit}
-                zoomLevel={settings.defaultZoom}
-              />
+              <ImageErrorBoundary>
+                <ImageViewer
+                  src={currentPageData.imageUrl}
+                  alt={`Page ${currentPage + 1}`}
+                  imageFit={settings.imageFit}
+                  zoomLevel={settings.defaultZoom}
+                />
+              </ImageErrorBoundary>
             ) : (
               <LoadingScreen message="Loading page..." />
             )}

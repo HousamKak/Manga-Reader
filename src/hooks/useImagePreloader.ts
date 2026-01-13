@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { preloadImage } from '@/utils/imageLoader';
+import { cacheImage, pruneCache } from "@/services/storageService";
 
 interface PreloadOptions {
   enabled?: boolean;
@@ -14,28 +15,69 @@ export function useImagePreloader(
   const [loadedUrls, setLoadedUrls] = useState<Set<string>>(new Set());
   const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const loadingUrlsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!enabled || urls.length === 0) return;
+    if (!enabled || urls.length === 0) {
+      setLoading(false);
+      return;
+    }
 
-    const abortController = new AbortController();
+    // Cancel previous loads
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    
     setLoading(true);
 
     const load = async () => {
       const urlsToLoad = urls.filter(
-        (url) => !loadedUrls.has(url) && !failedUrls.has(url)
+        (url) => !loadedUrls.has(url) && !failedUrls.has(url) && !loadingUrlsRef.current.has(url)
       );
 
+      if (urlsToLoad.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      // Mark as loading
+      urlsToLoad.forEach(url => loadingUrlsRef.current.add(url));
+
       for (let i = 0; i < urlsToLoad.length; i += maxConcurrent) {
-        if (abortController.signal.aborted) break;
+        if (signal.aborted) break;
 
         const batch = urlsToLoad.slice(i, i + maxConcurrent);
+        
+        // Preload AND cache in parallel
         const results = await Promise.allSettled(
-          batch.map((url) => preloadImage(url))
+          batch.map(async (url) => {
+            if (signal.aborted) throw new Error('Aborted');
+            
+            // Preload the image
+            await preloadImage(url);
+            
+            // Fetch and cache the blob for faster future loads
+            try {
+              const response = await fetch(url);
+              if (response.ok) {
+                const blob = await response.blob();
+                await cacheImage(url, blob);
+              }
+            } catch {
+              // Caching failed, but image loaded - not critical
+            }
+            
+            return url;
+          })
         );
+
+        if (signal.aborted) break;
 
         results.forEach((result, index) => {
           const url = batch[index];
+          loadingUrlsRef.current.delete(url);
+          
           if (result.status === 'fulfilled') {
             setLoadedUrls((prev) => new Set(prev).add(url));
           } else {
@@ -44,15 +86,25 @@ export function useImagePreloader(
         });
       }
 
-      setLoading(false);
+      if (!signal.aborted) {
+        setLoading(false);
+        
+        // Prune cache periodically to keep it under 100MB
+        // Run async without awaiting to avoid blocking
+        pruneCache(100 * 1024 * 1024).catch(() => {
+          // Silently ignore cache pruning errors
+        });
+      }
     };
 
     load();
 
     return () => {
-      abortController.abort();
+      abortControllerRef.current?.abort();
+      // Clear loading refs for these URLs
+      urls.forEach(url => loadingUrlsRef.current.delete(url));
     };
-  }, [urls, enabled, maxConcurrent]);
+  }, [urls.join(','), enabled, maxConcurrent]); // Use join for stable URL comparison
 
   return {
     loadedUrls,

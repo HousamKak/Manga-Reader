@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, memo } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { ImageFit } from '@/types/reader.types';
 import { cn } from '@/utils/cn';
 import { Loading } from '@/components/ui/Loading';
+import { getCachedImage } from '@/services/storageService';
 
 interface ImageViewerProps {
   src: string;
@@ -14,7 +15,7 @@ interface ImageViewerProps {
   className?: string;
 }
 
-export function ImageViewer({
+export const ImageViewer = memo(function ImageViewer({
   src,
   alt,
   imageFit,
@@ -25,22 +26,84 @@ export function ImageViewer({
 }: ImageViewerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [displaySrc, setDisplaySrc] = useState<string>(src);
   const [isTouchInput, setIsTouchInput] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const MAX_RETRIES = 2;
 
+  // Check cache and load image
   useEffect(() => {
-    setLoading(true);
-    setError(false);
+    let cancelled = false;
+    let blobUrl: string | null = null;
+    
+    const loadImage = async () => {
+      setLoading(true);
+      setError(false);
+      setRetryCount(0);
+      
+      // Try to get from cache first
+      try {
+        const cached = await getCachedImage(src);
+        if (cancelled) return;
+        
+        if (cached) {
+          blobUrl = URL.createObjectURL(cached);
+          setDisplaySrc(blobUrl);
+          return;
+        }
+      } catch {
+        // Cache miss, use original URL
+      }
+      
+      if (!cancelled) {
+        setDisplaySrc(src);
+      }
+    };
+    
+    loadImage();
+    
+    return () => {
+      cancelled = true;
+      // Clean up blob URL to prevent memory leaks
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
   }, [src]);
 
-  const handleLoad = () => {
-    setLoading(false);
-    onLoad?.();
+  const handleLoad = async () => {
+    // Force decode before removing blur for crisp rendering
+    if (imgRef.current && 'decode' in imgRef.current) {
+      try {
+        await imgRef.current.decode();
+      } catch {
+        // Decode failed, continue anyway
+      }
+    }
+    
+    // Use requestAnimationFrame to ensure rendering is complete
+    requestAnimationFrame(() => {
+      setLoading(false);
+      onLoad?.();
+    });
   };
 
   const handleError = () => {
-    setLoading(false);
-    setError(true);
-    onError?.();
+    if (retryCount < MAX_RETRIES) {
+      // Retry with exponential backoff
+      const delay = Math.pow(2, retryCount) * 1000;
+      setTimeout(() => {
+        setRetryCount(c => c + 1);
+        // Add retry parameter to bypass cache
+        const separator = src.includes('?') ? '&' : '?';
+        setDisplaySrc(src + `${separator}retry=${retryCount + 1}`);
+      }, delay);
+    } else {
+      setLoading(false);
+      setError(true);
+      onError?.();
+    }
   };
 
   useEffect(() => {
@@ -122,22 +185,25 @@ export function ImageViewer({
             </div>
           )}
           <img
-            src={src}
+            ref={imgRef}
+            src={displaySrc}
             alt={alt}
             className={cn(
               fitClass,
-              'block transition-all duration-500 ease-out',
-              loading ? 'blur-md scale-[1.01] brightness-110' : 'blur-0 scale-100 brightness-100'
+              'block transition-opacity duration-200',
+              loading ? 'opacity-0' : 'opacity-100'
             )}
             onLoad={handleLoad}
             onError={handleError}
             draggable={false}
-            loading="lazy"
             decoding="async"
+            fetchpriority="high"
             style={{ margin: '0 auto' }}
           />
         </div>
       </TransformComponent>
     </TransformWrapper>
   );
-}
+});
+
+ImageViewer.displayName = 'ImageViewer';
