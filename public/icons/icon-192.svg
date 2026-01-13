@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#1a1a1a"/>
+  <g fill="none" stroke="#8b7355" stroke-width="2">
+    <!-- Decorative medieval border -->
+    <rect x="16" y="16" width="160" height="160" stroke-width="3"/>
+    <rect x="24" y="24" width="144" height="144" stroke-width="1"/>
+  </g>
+  <!-- Book icon -->
+  <g fill="#8b7355">
+    <path d="M96 60 L96 132 L128 120 L128 48 Z" opacity="0.8"/>
+    <path d="M96 60 L96 132 L64 120 L64 48 Z" opacity="0.6"/>
+    <rect x="62" y="46" width="68" height="4"/>
+  </g>
+  <!-- Text -->
+  <text x="96" y="156" font-family="serif" font-size="14" fill="#8b7355" text-anchor="middle">MANGA</text>
+</svg>

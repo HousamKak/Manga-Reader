@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1a1a1a"/>
+  <g fill="none" stroke="#8b7355" stroke-width="4">
+    <!-- Decorative medieval border -->
+    <rect x="32" y="32" width="448" height="448" stroke-width="6"/>
+    <rect x="48" y="48" width="416" height="416" stroke-width="2"/>
+  </g>
+  <!-- Book icon -->
+  <g fill="#8b7355">
+    <path d="M256 140 L256 372 L352 344 L352 112 Z" opacity="0.8"/>
+    <path d="M256 140 L256 372 L160 344 L160 112 Z" opacity="0.6"/>
+    <rect x="156" y="108" width="200" height="8"/>
+    <!-- Bookmark -->
+    <path d="M256 112 L256 160 L240 150 L224 160 L224 112 Z" fill="#a0826d"/>
+  </g>
+  <!-- Text -->
+  <text x="256" y="420" font-family="serif" font-size="32" fill="#8b7355" text-anchor="middle" font-weight="bold">MANGA READER</text>
+</svg>
