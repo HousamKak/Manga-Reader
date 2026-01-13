@@ -170,6 +170,7 @@ export function Library() {
     status: ReadingStatus;
     tags: string[];
   }) => {
+    console.log("[AddManga] handleAddManga received:", data);
     const newManga = await addManga({
       title: data.title,
       urlSlug: data.urlSlug,
@@ -179,6 +180,7 @@ export function Library() {
       tags: data.tags,
       chapters: [],
     });
+    console.log("[AddManga] Created manga:", newManga);
 
     if (data.autoDiscover) {
       setDiscoveringManga(newManga.id);
