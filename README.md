@@ -19,7 +19,9 @@ A modern, ad-free manga reader built with React, TypeScript, and Vite. The app f
 
 ### Library Management
 - Add manga by slug (for example `my-gift-lvl-9999-unlimited-gacha`).
-- Automatic chapter and page discovery against `manga.pics`.
+- **Multiple manga sources** with support for different URL patterns and file formats.
+- **Source management** - add, edit, and manage custom manga sources.
+- Automatic chapter and page discovery with source-specific URL patterns.
 - Last-read position tracking per manga with resume support.
 - Library overview with delete, progress, and chapter discovery status indicators.
 
@@ -60,11 +62,28 @@ A modern, ad-free manga reader built with React, TypeScript, and Vite. The app f
 
 ### Adding Manga
 1. Click **Add Manga** in the library view.
-2. Enter the slug from the manga URL (for example the slug in `https://manga.pics/my-gift...`).
-3. Leave **Automatically discover all chapters** checked to probe chapters and pages immediately (you can disable it).
-4. Submit the form; the title is auto-generated from the slug and discovery runs in the background.
+2. Enter the manga name (spaces will be converted to dashes automatically).
+3. **Select a manga source** from the dropdown (defaults to Manga Pics).
+4. Leave **Automatically discover all chapters** checked to probe chapters and pages immediately (you can disable it).
+5. Submit the form; the title is auto-generated from the slug and discovery runs in the background.
 
-See `MANGA_SOURCES.md` for tips on confirming slug spelling.
+See `MANGA_SOURCES.md` for detailed information about available sources and how to add custom sources.
+
+### Managing Manga Sources
+1. Open Settings (gear icon).
+2. Scroll to the **Manga Sources** section.
+3. View all available sources (built-in and custom).
+4. **Add Custom Source**: Click "Add Source" and fill in:
+   - Source name, base URL, pattern type
+   - File extension (jpg, webp, png)
+   - Chapter format and optional path prefix
+5. **Edit/Delete**: Use the icons next to each source.
+6. **Activate/Deactivate**: Toggle sources on/off with the power icon.
+
+#### Built-in Sources
+- **Manga Pics** (default): `https://manga.pics` - JPG format
+- **Black Clover CDN**: `https://cdn.black-clover.org` - WebP format with `/file/leveling` prefix
+- **Raven Scans**: `https://ravenscans.com/manga` - JPG format
 
 ### Library View
 - Displays every manga stored locally with progress indicators.
@@ -106,18 +125,19 @@ src/
   components/
     library/      # Library UI (grid, cards, add dialog)
     reader/       # Reader toolbar, chapter selector, image viewer
-    settings/     # Settings panel and form controls
+    settings/     # Settings panel, source manager, form controls
     ui/           # Shared UI primitives
   hooks/          # Reusable logic (preloading, gestures, auto-hide)
   pages/          # Route-level screens (Library, Reader)
-  services/       # Data access, discovery, storage helpers
+  services/       # Data access, discovery, storage, source management
   stores/         # Zustand stores for manga, reader, settings
   types/          # Shared TypeScript definitions
   utils/          # URL builders, validators, helpers
 ```
 
 ## Troubleshooting
-- **Images not loading**: Verify the slug and chapter or page exist, then check the browser console for network or CORS errors.
+- **Images not loading**: Verify the manga slug and ensure the selected source is correct. Try a different source or check the browser console for network or CORS errors.
+- **Source not working**: Check if the source is active in settings, verify the URL pattern matches the actual source structure.
 - **Slow discovery**: Large series may take time; you can disable auto-discovery and explore chapters manually.
 - **Performance issues**: Lower the preload count, reduce cache size, or disable preloading in settings.
 - **Stale pages**: Use the toolbar reload action to force a chapter refresh.

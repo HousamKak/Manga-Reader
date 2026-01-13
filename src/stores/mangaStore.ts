@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { Manga, Chapter } from '@/types/manga.types';
 import { saveManga, getManga, getAllManga, deleteManga } from '@/services/storageService';
 import { discoverAllChapters, discoverChapterPages } from '@/services/mangaService';
-import { buildMangaPageUrl } from '@/utils/urlBuilder';
+import { buildMangaPageUrl, buildSourcePageUrl } from '@/utils/urlBuilder';
+import { getSourceById } from '@/services/sourceService';
 
 const normalizeManga = (manga: Manga): Manga => {
   const partial = manga as Partial<Manga>;
@@ -147,13 +148,17 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
   discoverMangaChapters: async (mangaId: string, baseUrl: string, urlSlug: string) => {
     set({ isLoading: true, error: null, discoveryProgress: null });
     try {
+      const manga = await getManga(mangaId);
+      const sourceId = manga?.sourceId;
+      
       const chapters = await discoverAllChapters(
         baseUrl,
         urlSlug,
         mangaId,
         (current, total) => {
           set({ discoveryProgress: { current, total } });
-        }
+        },
+        sourceId
       );
 
       await get().updateManga(mangaId, {
@@ -241,17 +246,33 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
       const INITIAL_PLACEHOLDERS = 15;
 
       if (chapter.pages.length === 0) {
-        const firstPageUrl = buildMangaPageUrl({
-          baseUrl: manga.baseUrl,
-          mangaSlug: manga.urlSlug,
-          chapterNumber,
-          pageNumber: 0
-        });
+        const source = manga.sourceId ? getSourceById(manga.sourceId) : null;
+        
+        const firstPageUrl = source
+          ? buildSourcePageUrl({
+              source,
+              mangaSlug: manga.urlSlug,
+              chapterNumber,
+              pageNumber: 0
+            })
+          : buildMangaPageUrl({
+              baseUrl: manga.baseUrl,
+              mangaSlug: manga.urlSlug,
+              chapterNumber,
+              pageNumber: 0
+            });
 
         const placeholderPages = Array.from({ length: INITIAL_PLACEHOLDERS }, (_, index) => {
           const imageUrl =
             index === 0
               ? firstPageUrl
+              : source
+              ? buildSourcePageUrl({
+                  source,
+                  mangaSlug: manga!.urlSlug,
+                  chapterNumber,
+                  pageNumber: index
+                })
               : buildMangaPageUrl({
                   baseUrl: manga!.baseUrl,
                   mangaSlug: manga!.urlSlug,
@@ -286,7 +307,7 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
         chapter = manga.chapters[chapterIndex];
       }
 
-      discoverChapterPages(manga.baseUrl, manga.urlSlug, mangaId, chapterNumber)
+      discoverChapterPages(manga.baseUrl, manga.urlSlug, mangaId, chapterNumber, manga.sourceId)
         .then(async (pages) => {
           const freshManga = await refreshManga();
           if (!freshManga) return;

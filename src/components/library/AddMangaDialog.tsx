@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Input } from '@/components/ui/Input';
@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { isValidMangaSlug } from '@/utils/validators';
 import { TagEditor } from '@/components/ui/TagEditor';
 import { ReadingStatus } from '@/types/manga.types';
+import { getActiveSources, getDefaultSource } from '@/services/sourceService';
+import { MangaSource } from '@/types/source.types';
 
 interface AddMangaDialogProps {
   open: boolean;
@@ -14,6 +16,7 @@ interface AddMangaDialogProps {
     title: string;
     urlSlug: string;
     baseUrl: string;
+    sourceId?: string;
     autoDiscover: boolean;
     status: ReadingStatus;
     tags: string[];
@@ -29,6 +32,21 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [sources, setSources] = useState<MangaSource[]>([]);
+  const [selectedSourceId, setSelectedSourceId] = useState<string>('');
+
+  useEffect(() => {
+    if (open) {
+      const activeSources = getActiveSources();
+      setSources(activeSources);
+      
+      // Set default source
+      const defaultSource = getDefaultSource();
+      if (defaultSource) {
+        setSelectedSourceId(defaultSource.id);
+      }
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,10 +74,14 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 
+      const selectedSource = sources.find(s => s.id === selectedSourceId);
+      const baseUrl = selectedSource?.baseUrl || DEFAULT_BASE_URL;
+
       await onAdd({
         title: generatedTitle,
         urlSlug: cleanedSlug,
-        baseUrl: DEFAULT_BASE_URL,
+        baseUrl,
+        sourceId: selectedSourceId || undefined,
         autoDiscover,
         status,
         tags
@@ -99,8 +121,27 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
             <p className="text-xs text-muted-foreground mt-1">
               Enter the manga name (spaces will be converted to dashes automatically)
             </p>
-            <p className="text-xs text-muted-foreground">
-              Default source: manga.pics
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Source
+            </label>
+            <select
+              value={selectedSourceId}
+              onChange={(e) => setSelectedSourceId(e.target.value)}
+              disabled={loading}
+              className="w-full rounded border-2 border-stone-600 bg-[hsl(var(--parchment))] px-3 py-2 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-amber-500"
+              aria-label="Manga Source"
+            >
+              {sources.map(source => (
+                <option key={source.id} value={source.id}>
+                  {source.name} - {source.baseUrl}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">
+              Select the source to fetch manga images from
             </p>
           </div>
 

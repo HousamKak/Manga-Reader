@@ -4,7 +4,8 @@ export interface Manga {
   id: string;
   title: string;
   urlSlug: string; // e.g., "my-gift-lvl-9999-unlimited-gacha"
-  baseUrl: string; // e.g., "https://manga.pics"
+  baseUrl: string; // e.g., "https://manga.pics" (legacy support)
+  sourceId?: string; // ID of the manga source (new)
   coverImage?: string;
   totalChapters?: number;
   status: ReadingStatus;

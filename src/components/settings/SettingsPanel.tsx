@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/Button';
 import { AppSettings } from '@/types/settings.types';
 import { clearCache, getCacheSize } from '@/services/storageService';
+import { SourceManager } from './SourceManager';
 
 interface SettingsPanelProps {
   open: boolean;
@@ -290,6 +291,11 @@ export function SettingsPanel({
                 Clear Cache
               </Button>
             </div>
+          </section>
+
+          {/* Source Management */}
+          <section>
+            <SourceManager />
           </section>
         </div>
       </DialogContent>
