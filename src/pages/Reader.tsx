@@ -54,10 +54,10 @@ export function Reader() {
 
   // Debounced setPage to prevent rapid state updates during fast navigation
   const debouncedSetPage = useMemo(() => {
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: number | null = null;
     return (page: number) => {
       if (timeoutId) clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => setPage(page), 50);
+      timeoutId = setTimeout(() => setPage(page), 50) as unknown as number;
     };
   }, [setPage]);
 
