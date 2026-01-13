@@ -1,4 +1,4 @@
-import React, { Component, ReactNode } from 'react';
+import React, { Component, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -25,7 +25,7 @@ export class ImageErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Image rendering error:', error, errorInfo);
+    console.error("Image rendering error:", error, errorInfo);
   }
 
   render() {
@@ -38,12 +38,17 @@ export class ImageErrorBoundary extends Component<Props, State> {
         <div className="flex items-center justify-center min-h-[400px] bg-muted/50 rounded border-2 border-dashed border-muted-foreground/20">
           <div className="text-center p-6">
             <div className="text-4xl mb-3">📖</div>
-            <p className="text-destructive font-medium mb-2">Failed to render image</p>
+            <p className="text-destructive font-medium mb-2">
+              Failed to render image
+            </p>
             <p className="text-sm text-muted-foreground max-w-md">
-              {this.state.error?.message || 'An unexpected error occurred while rendering this page.'}
+              {this.state.error?.message ||
+                "An unexpected error occurred while rendering this page."}
             </p>
             <button
-              onClick={() => this.setState({ hasError: false, error: undefined })}
+              onClick={() =>
+                this.setState({ hasError: false, error: undefined })
+              }
               className="mt-4 px-4 py-2 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
             >
               Try Again

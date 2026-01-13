@@ -1,23 +1,32 @@
-import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useMangaStore } from '@/stores/mangaStore';
-import { useReaderStore } from '@/stores/readerStore';
-import { useSettingsStore } from '@/stores/settingsStore';
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
-import { useSwipeGestures } from '@/hooks/useSwipeGestures';
-import { useAutoHideUI } from '@/hooks/useAutoHideUI';
-import { useImagePreloader } from '@/hooks/useImagePreloader';
-import { ImageViewer } from '@/components/reader/ImageViewer';
-import { ImageErrorBoundary } from '@/components/reader/ImageErrorBoundary';
-import { ReaderToolbar } from '@/components/reader/ReaderToolbar';
-import { PageControls } from '@/components/reader/PageControls';
-import { ChapterSelector } from '@/components/reader/ChapterSelector';
-import { SettingsPanel } from '@/components/settings/SettingsPanel';
-import { LoadingScreen } from '@/components/ui/Loading';
-import { cn } from '@/utils/cn';
+import { ChapterSelector } from "@/components/reader/ChapterSelector";
+import { ImageErrorBoundary } from "@/components/reader/ImageErrorBoundary";
+import { ImageViewer } from "@/components/reader/ImageViewer";
+import { PageControls } from "@/components/reader/PageControls";
+import { ReaderToolbar } from "@/components/reader/ReaderToolbar";
+import { SettingsPanel } from "@/components/settings/SettingsPanel";
+import { LoadingScreen } from "@/components/ui/Loading";
+import { useAutoHideUI } from "@/hooks/useAutoHideUI";
+import { useImagePreloader } from "@/hooks/useImagePreloader";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useSwipeGestures } from "@/hooks/useSwipeGestures";
+import { useMangaStore } from "@/stores/mangaStore";
+import { useReaderStore } from "@/stores/readerStore";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { cn } from "@/utils/cn";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export function Reader() {
-  const { mangaId, chapterId } = useParams<{ mangaId: string; chapterId: string }>();
+  const { mangaId, chapterId } = useParams<{
+    mangaId: string;
+    chapterId: string;
+  }>();
   const navigate = useNavigate();
 
   const [showChapterSelector, setShowChapterSelector] = useState(false);
@@ -26,7 +35,8 @@ export function Reader() {
   const initialPageAppliedRef = useRef(false);
   const pendingScrollToTopRef = useRef(true);
 
-  const { currentManga, loadManga, updateReadingProgress, discoverChapter } = useMangaStore();
+  const { currentManga, loadManga, updateReadingProgress, discoverChapter } =
+    useMangaStore();
   const {
     currentPage,
     uiVisible,
@@ -38,7 +48,7 @@ export function Reader() {
     previousPage,
     toggleUI,
     setUIVisible,
-    setNavigation
+    setNavigation,
   } = useReaderStore();
   const { settings, updateSettings } = useSettingsStore();
 
@@ -73,7 +83,7 @@ export function Reader() {
 
       // Discover pages for this chapter if not already discovered
       discoverChapter(mangaId, chapterNumber).catch((error) => {
-        console.error('Failed to discover chapter pages:', error);
+        console.error("Failed to discover chapter pages:", error);
       });
     }
   }, [chapterId, mangaId]); // Remove currentManga dependency to prevent re-renders
@@ -86,12 +96,14 @@ export function Reader() {
     (options?: { immediate?: boolean }) => {
       pendingScrollToTopRef.current = true;
 
-      if (options?.immediate && typeof window !== 'undefined') {
+      if (options?.immediate && typeof window !== "undefined") {
         const scrollingElement =
-          document.scrollingElement || document.documentElement || document.body;
+          document.scrollingElement ||
+          document.documentElement ||
+          document.body;
 
         requestAnimationFrame(() => {
-          scrollingElement.scrollTo({ top: 0, behavior: 'auto' });
+          scrollingElement.scrollTo({ top: 0, behavior: "auto" });
           pendingScrollToTopRef.current = false;
         });
       }
@@ -101,7 +113,7 @@ export function Reader() {
 
   useEffect(() => {
     if (!chapterId || !pendingScrollToTopRef.current) return;
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const scrollingElement =
       document.scrollingElement || document.documentElement || document.body;
@@ -109,7 +121,7 @@ export function Reader() {
     pendingScrollToTopRef.current = false;
 
     requestAnimationFrame(() => {
-      scrollingElement.scrollTo({ top: 0, behavior: 'auto' });
+      scrollingElement.scrollTo({ top: 0, behavior: "auto" });
     });
   }, [chapterId]);
 
@@ -118,12 +130,15 @@ export function Reader() {
     if (!currentManga || !chapterId) return;
 
     const chapterNumber = parseInt(chapterId);
-    const chapterIndex = currentManga.chapters.findIndex((c) => c.chapterNumber === chapterNumber);
+    const chapterIndex = currentManga.chapters.findIndex(
+      (c) => c.chapterNumber === chapterNumber
+    );
     const currentChapter = currentManga.chapters[chapterIndex];
 
     if (!currentChapter) return;
 
-    const totalPages = currentChapter.totalPages || currentChapter.pages.length || 1;
+    const totalPages =
+      currentChapter.totalPages || currentChapter.pages.length || 1;
 
     setNavigation({
       hasNextPage: currentPage < totalPages - 1, // 0-indexed, so last page is totalPages - 1
@@ -131,7 +146,7 @@ export function Reader() {
       hasNextChapter: chapterIndex < currentManga.chapters.length - 1,
       hasPreviousChapter: chapterIndex > 0,
       currentChapterIndex: chapterIndex,
-      totalChapters: currentManga.chapters.length
+      totalChapters: currentManga.chapters.length,
     });
   }, [currentManga, chapterId, currentPage]);
 
@@ -139,7 +154,9 @@ export function Reader() {
   useEffect(() => {
     if (mangaId && chapterId && currentPage >= 0) {
       const chapterNumber = parseInt(chapterId);
-      const chapter = currentManga?.chapters.find(c => c.chapterNumber === chapterNumber);
+      const chapter = currentManga?.chapters.find(
+        (c) => c.chapterNumber === chapterNumber
+      );
       if (chapter) {
         updateReadingProgress(mangaId, chapter.id, currentPage);
       }
@@ -147,7 +164,11 @@ export function Reader() {
   }, [mangaId, chapterId, currentPage, currentManga]);
 
   // Auto-hide UI
-  useAutoHideUI(() => setUIVisible(false), settings.autoHideDelay, settings.autoHideUI);
+  useAutoHideUI(
+    () => setUIVisible(false),
+    settings.autoHideDelay,
+    settings.autoHideUI
+  );
 
   // Get current chapter and pages
   const chapterNumber = chapterId ? parseInt(chapterId) : null;
@@ -172,7 +193,10 @@ export function Reader() {
       return;
     }
 
-    if (lastChapterNumber !== activeChapterNumber || initialPageAppliedRef.current) {
+    if (
+      lastChapterNumber !== activeChapterNumber ||
+      initialPageAppliedRef.current
+    ) {
       return;
     }
 
@@ -198,12 +222,18 @@ export function Reader() {
     setReloadingChapter(true);
     discoverChapter(mangaId, number, { force: true })
       .catch((error) => {
-        console.error('Failed to reload chapter pages:', error);
+        console.error("Failed to reload chapter pages:", error);
       })
       .finally(() => {
         setReloadingChapter(false);
       });
-  }, [mangaId, chapterId, reloadingChapter, discoverChapter, requestScrollToTop]);
+  }, [
+    mangaId,
+    chapterId,
+    reloadingChapter,
+    discoverChapter,
+    requestScrollToTop,
+  ]);
 
   // Preload adjacent pages
   const pagesToPreload = React.useMemo(() => {
@@ -215,11 +245,16 @@ export function Reader() {
       if (nextPage) urls.push(nextPage.imageUrl);
     }
     return urls;
-  }, [currentChapter, currentPage, settings.enablePreloading, settings.preloadPages]);
+  }, [
+    currentChapter,
+    currentPage,
+    settings.enablePreloading,
+    settings.preloadPages,
+  ]);
 
   useImagePreloader(pagesToPreload, {
     enabled: settings.enablePreloading,
-    maxConcurrent: settings.maxConcurrentLoads
+    maxConcurrent: settings.maxConcurrentLoads,
   });
 
   useEffect(() => {
@@ -230,7 +265,8 @@ export function Reader() {
     [1, 2].forEach((offset) => {
       const targetChapter = chapterNumber + offset;
       if (targetChapter <= 0) return;
-      if (typeof totalChapters === 'number' && targetChapter > totalChapters) return;
+      if (typeof totalChapters === "number" && targetChapter > totalChapters)
+        return;
 
       discoverChapter(mangaId, targetChapter).catch(() => {
         // Ignore prefetch failures; chapter may not exist yet
@@ -242,39 +278,47 @@ export function Reader() {
   const handleShortcutAction = useCallback(
     (action: string) => {
       switch (action) {
-        case 'nextPage':
+        case "nextPage":
           if (navigation.hasNextPage) nextPage();
           break;
-        case 'previousPage':
+        case "previousPage":
           if (navigation.hasPreviousPage) previousPage();
           break;
-        case 'toggleFullscreen':
+        case "toggleFullscreen":
           if (document.fullscreenElement) {
             document.exitFullscreen();
           } else {
             document.documentElement.requestFullscreen();
           }
           break;
-        case 'exitFullscreen':
+        case "exitFullscreen":
           if (document.fullscreenElement) {
             document.exitFullscreen();
           }
           break;
-        case 'toggleUI':
+        case "toggleUI":
           toggleUI();
           break;
-        case 'firstPage':
+        case "firstPage":
           debouncedSetPage(0); // First page is 0
           break;
-        case 'lastPage':
+        case "lastPage":
           if (currentChapter) {
-            const totalPages = currentChapter.totalPages || currentChapter.pages.length;
+            const totalPages =
+              currentChapter.totalPages || currentChapter.pages.length;
             debouncedSetPage(totalPages - 1); // Last page is totalPages - 1 (0-indexed)
           }
           break;
       }
     },
-    [navigation, nextPage, previousPage, toggleUI, debouncedSetPage, currentChapter]
+    [
+      navigation,
+      nextPage,
+      previousPage,
+      toggleUI,
+      debouncedSetPage,
+      currentChapter,
+    ]
   );
 
   useKeyboardShortcuts(handleShortcutAction, settings.enableKeyboardShortcuts);
@@ -283,40 +327,48 @@ export function Reader() {
   useSwipeGestures(
     {
       onSwipeLeft: () => {
-        if (settings.readingDirection === 'ltr' && navigation.hasNextPage) {
+        if (settings.readingDirection === "ltr" && navigation.hasNextPage) {
           nextPage();
-        } else if (settings.readingDirection === 'rtl' && navigation.hasPreviousPage) {
+        } else if (
+          settings.readingDirection === "rtl" &&
+          navigation.hasPreviousPage
+        ) {
           previousPage();
         }
       },
       onSwipeRight: () => {
-        if (settings.readingDirection === 'ltr' && navigation.hasPreviousPage) {
+        if (settings.readingDirection === "ltr" && navigation.hasPreviousPage) {
           previousPage();
-        } else if (settings.readingDirection === 'rtl' && navigation.hasNextPage) {
+        } else if (
+          settings.readingDirection === "rtl" &&
+          navigation.hasNextPage
+        ) {
           nextPage();
         }
-      }
+      },
     },
     { enabled: settings.enableTouchGestures }
   );
 
   const handleNextChapter = () => {
     if (!currentManga || !navigation.hasNextChapter) return;
-    const nextChapter = currentManga.chapters[navigation.currentChapterIndex + 1];
+    const nextChapter =
+      currentManga.chapters[navigation.currentChapterIndex + 1];
     requestScrollToTop();
     navigate(`/read/${mangaId}/${nextChapter.chapterNumber}`);
   };
 
   const handlePreviousChapter = () => {
     if (!currentManga || !navigation.hasPreviousChapter) return;
-    const prevChapter = currentManga.chapters[navigation.currentChapterIndex - 1];
+    const prevChapter =
+      currentManga.chapters[navigation.currentChapterIndex - 1];
     requestScrollToTop();
     navigate(`/read/${mangaId}/${prevChapter.chapterNumber}`);
   };
 
   const handleSelectChapter = (chapterId: string) => {
     // Extract chapter number from chapter ID
-    const chapter = currentManga?.chapters.find(c => c.id === chapterId);
+    const chapter = currentManga?.chapters.find((c) => c.id === chapterId);
     if (chapter) {
       if (chapterNumber && chapter.chapterNumber === chapterNumber) {
         requestScrollToTop({ immediate: true });
@@ -347,14 +399,14 @@ export function Reader() {
   }
 
   const bgColorClass = {
-    white: 'bg-white',
-    black: 'bg-black',
-    sepia: 'bg-[#f4ecd8]'
+    white: "bg-white",
+    black: "bg-black",
+    sepia: "bg-[#f4ecd8]",
   }[settings.backgroundColor];
 
   return (
     <div
-      className={cn('min-h-screen', bgColorClass)}
+      className={cn("min-h-screen", bgColorClass)}
       onClick={() => setUIVisible(!uiVisible)}
     >
       {/* Toolbar - Always Visible */}
@@ -367,12 +419,12 @@ export function Reader() {
         readingMode={settings.readingMode}
         imageFit={settings.imageFit}
         fullscreen={!!document.fullscreenElement}
-        onBack={() => navigate('/')}
+        onBack={() => navigate("/")}
         onSettingsClick={() => setShowSettings(true)}
         onChapterListClick={() => setShowChapterSelector(true)}
         onToggleFullscreen={handleToggleFullscreen}
         onToggleReadingMode={() => {
-          const modes = ['continuous', 'single', 'double'] as const;
+          const modes = ["continuous", "single", "double"] as const;
           const currentIndex = modes.indexOf(settings.readingMode);
           const nextMode = modes[(currentIndex + 1) % modes.length];
           updateSettings({ readingMode: nextMode });
@@ -397,11 +449,14 @@ export function Reader() {
 
       {/* Main Content */}
       <main className="pt-32 sm:pt-16 pb-24">
-        {settings.readingMode === 'continuous' ? (
+        {settings.readingMode === "continuous" ? (
           <div className="space-y-2">
             {currentChapter.pages.length > 0 ? (
               currentChapter.pages.map((page) => (
-                <div key={page.id} className="w-full flex justify-center items-center">
+                <div
+                  key={page.id}
+                  className="w-full flex justify-center items-center"
+                >
                   <ImageErrorBoundary>
                     <ImageViewer
                       src={page.imageUrl}
@@ -438,7 +493,7 @@ export function Reader() {
       </main>
 
       {/* Page Controls (only for single/double page mode) */}
-      {settings.readingMode !== 'continuous' && (
+      {settings.readingMode !== "continuous" && (
         <PageControls
           currentPage={currentPage}
           totalPages={currentChapter.totalPages || currentChapter.pages.length}

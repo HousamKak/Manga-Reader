@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef, memo } from 'react';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { ImageFit } from '@/types/reader.types';
-import { cn } from '@/utils/cn';
-import { Loading } from '@/components/ui/Loading';
-import { getCachedImage } from '@/services/storageService';
+import { Loading } from "@/components/ui/Loading";
+import { getCachedImage } from "@/services/storageService";
+import { ImageFit } from "@/types/reader.types";
+import { cn } from "@/utils/cn";
+import { memo, useEffect, useRef, useState } from "react";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 
 interface ImageViewerProps {
   src: string;
@@ -22,7 +22,7 @@ export const ImageViewer = memo(function ImageViewer({
   zoomLevel = 1,
   onLoad,
   onError,
-  className
+  className,
 }: ImageViewerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -36,17 +36,17 @@ export const ImageViewer = memo(function ImageViewer({
   useEffect(() => {
     let cancelled = false;
     let blobUrl: string | null = null;
-    
+
     const loadImage = async () => {
       setLoading(true);
       setError(false);
       setRetryCount(0);
-      
+
       // Try to get from cache first
       try {
         const cached = await getCachedImage(src);
         if (cancelled) return;
-        
+
         if (cached) {
           blobUrl = URL.createObjectURL(cached);
           setDisplaySrc(blobUrl);
@@ -55,14 +55,14 @@ export const ImageViewer = memo(function ImageViewer({
       } catch {
         // Cache miss, use original URL
       }
-      
+
       if (!cancelled) {
         setDisplaySrc(src);
       }
     };
-    
+
     loadImage();
-    
+
     return () => {
       cancelled = true;
       // Clean up blob URL to prevent memory leaks
@@ -74,14 +74,14 @@ export const ImageViewer = memo(function ImageViewer({
 
   const handleLoad = async () => {
     // Force decode before removing blur for crisp rendering
-    if (imgRef.current && 'decode' in imgRef.current) {
+    if (imgRef.current && "decode" in imgRef.current) {
       try {
         await imgRef.current.decode();
       } catch {
         // Decode failed, continue anyway
       }
     }
-    
+
     // Use requestAnimationFrame to ensure rendering is complete
     requestAnimationFrame(() => {
       setLoading(false);
@@ -94,9 +94,9 @@ export const ImageViewer = memo(function ImageViewer({
       // Retry with exponential backoff
       const delay = Math.pow(2, retryCount) * 1000;
       setTimeout(() => {
-        setRetryCount(c => c + 1);
+        setRetryCount((c) => c + 1);
         // Add retry parameter to bypass cache
-        const separator = src.includes('?') ? '&' : '?';
+        const separator = src.includes("?") ? "&" : "?";
         setDisplaySrc(src + `${separator}retry=${retryCount + 1}`);
       }, delay);
     } else {
@@ -107,9 +107,9 @@ export const ImageViewer = memo(function ImageViewer({
   };
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    const mediaQuery = window.matchMedia('(pointer: coarse)');
+    const mediaQuery = window.matchMedia("(pointer: coarse)");
 
     const updateTouchState = () => {
       const navigatorAny = navigator as Navigator & {
@@ -118,7 +118,7 @@ export const ImageViewer = memo(function ImageViewer({
 
       const touchDetected =
         mediaQuery.matches ||
-        'ontouchstart' in window ||
+        "ontouchstart" in window ||
         (navigator.maxTouchPoints ?? 0) > 0 ||
         (navigatorAny.msMaxTouchPoints ?? 0) > 0;
 
@@ -130,14 +130,14 @@ export const ImageViewer = memo(function ImageViewer({
     const handleChange = () => updateTouchState();
 
     if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
+      mediaQuery.addEventListener("change", handleChange);
     } else if (mediaQuery.addListener) {
       mediaQuery.addListener(handleChange);
     }
 
     return () => {
       if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', handleChange);
+        mediaQuery.removeEventListener("change", handleChange);
       } else if (mediaQuery.removeListener) {
         mediaQuery.removeListener(handleChange);
       }
@@ -145,10 +145,10 @@ export const ImageViewer = memo(function ImageViewer({
   }, []);
 
   const fitClass = {
-    width: 'w-full h-auto max-w-full',
-    height: 'h-screen w-auto',
-    contain: 'w-full h-auto object-contain',
-    cover: 'w-full h-auto object-cover'
+    width: "w-full h-auto max-w-full",
+    height: "h-screen w-auto",
+    contain: "w-full h-auto object-contain",
+    cover: "w-full h-auto object-cover",
   }[imageFit];
 
   if (error) {
@@ -168,14 +168,14 @@ export const ImageViewer = memo(function ImageViewer({
       minScale={0.5}
       maxScale={4}
       wheel={{ disabled: true }} // Disable wheel zoom to allow page scrolling
-      doubleClick={{ mode: 'reset' }}
+      doubleClick={{ mode: "reset" }}
       panning={{ disabled: isTouchInput }}
       pinch={{ disabled: false }}
       key={`zoom-${zoomLevel}`} // Force re-render when zoom changes
     >
       <TransformComponent
-        wrapperClass={cn('w-full flex justify-center', className)}
-        wrapperStyle={isTouchInput ? { touchAction: 'pan-y' } : undefined}
+        wrapperClass={cn("w-full flex justify-center", className)}
+        wrapperStyle={isTouchInput ? { touchAction: "pan-y" } : undefined}
         contentClass="flex justify-center w-full"
       >
         <div className="relative flex justify-center w-full">
@@ -190,15 +190,15 @@ export const ImageViewer = memo(function ImageViewer({
             alt={alt}
             className={cn(
               fitClass,
-              'block transition-opacity duration-200',
-              loading ? 'opacity-0' : 'opacity-100'
+              "block transition-opacity duration-200",
+              loading ? "opacity-0" : "opacity-100"
             )}
             onLoad={handleLoad}
             onError={handleError}
             draggable={false}
             decoding="async"
             fetchpriority="high"
-            style={{ margin: '0 auto' }}
+            style={{ margin: "0 auto" }}
           />
         </div>
       </TransformComponent>
@@ -206,4 +206,4 @@ export const ImageViewer = memo(function ImageViewer({
   );
 });
 
-ImageViewer.displayName = 'ImageViewer';
+ImageViewer.displayName = "ImageViewer";
