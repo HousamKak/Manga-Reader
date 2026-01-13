@@ -1,5 +1,5 @@
-import { MangaUrlPattern } from '@/types/manga.types';
-import { MangaSource, SourceUrlPattern } from '@/types/source.types';
+import { MangaUrlPattern } from "@/types/manga.types";
+import { SourceUrlPattern } from "@/types/source.types";
 
 /**
  * Builds a manga page URL from the pattern (legacy support)
@@ -16,18 +16,22 @@ export function buildMangaPageUrl(pattern: MangaUrlPattern): string {
  */
 export function buildSourcePageUrl(pattern: SourceUrlPattern): string {
   const { source, mangaSlug, chapterNumber, pageNumber } = pattern;
-  const { baseUrl, patternType, pathPrefix, fileExtension, chapterFormat } = source;
+  const { baseUrl, patternType, pathPrefix, fileExtension, chapterFormat } =
+    source;
 
   // Build chapter part with format
-  const chapterPart = chapterFormat.replace('{number}', chapterNumber.toString());
+  const chapterPart = chapterFormat.replace(
+    "{number}",
+    chapterNumber.toString()
+  );
 
   // Build URL based on pattern type
   switch (patternType) {
-    case 'prefixed':
+    case "prefixed":
       // Example: https://cdn.black-clover.org/file/leveling/hells-paradise/chapter-11/2.webp
       return `${baseUrl}${pathPrefix}/${mangaSlug}/${chapterPart}/${pageNumber}.${fileExtension}`;
-    
-    case 'standard':
+
+    case "standard":
     default:
       // Example: https://manga.pics/my-gift/chapter-105/3.jpg
       return `${baseUrl}/${mangaSlug}/${chapterPart}/${pageNumber}.${fileExtension}`;
@@ -41,17 +45,17 @@ export function buildSourcePageUrl(pattern: SourceUrlPattern): string {
 export function parseMangaUrl(url: string): MangaUrlPattern | null {
   try {
     const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/').filter(p => p);
+    const pathParts = urlObj.pathname.split("/").filter((p) => p);
 
     if (pathParts.length < 3) return null;
 
     // Try to detect pattern type
-    let mangaSlug = '';
-    let chapterPart = '';
-    let pagePart = '';
+    let mangaSlug = "";
+    let chapterPart = "";
+    let pagePart = "";
 
     // Check for prefixed pattern (e.g., /file/leveling/manga-name/chapter-X/page.ext)
-    if (pathParts.length >= 5 && pathParts[0] === 'file') {
+    if (pathParts.length >= 5 && pathParts[0] === "file") {
       mangaSlug = pathParts[2];
       chapterPart = pathParts[3];
       pagePart = pathParts[4];
@@ -63,7 +67,8 @@ export function parseMangaUrl(url: string): MangaUrlPattern | null {
     }
 
     // Extract chapter number
-    const chapterMatch = chapterPart.match(/chapter-?(\d+)/i) || chapterPart.match(/(\d+)/);
+    const chapterMatch =
+      chapterPart.match(/chapter-?(\d+)/i) || chapterPart.match(/(\d+)/);
     if (!chapterMatch) return null;
 
     // Extract page number and extension
@@ -74,7 +79,7 @@ export function parseMangaUrl(url: string): MangaUrlPattern | null {
       baseUrl: `${urlObj.protocol}//${urlObj.host}`,
       mangaSlug,
       chapterNumber: parseInt(chapterMatch[1]),
-      pageNumber: parseInt(pageMatch[1])
+      pageNumber: parseInt(pageMatch[1]),
     };
   } catch {
     return null;

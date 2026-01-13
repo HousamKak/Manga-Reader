@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { isValidMangaSlug } from '@/utils/validators';
-import { TagEditor } from '@/components/ui/TagEditor';
-import { ReadingStatus } from '@/types/manga.types';
-import { getActiveSources, getDefaultSource } from '@/services/sourceService';
-import { MangaSource } from '@/types/source.types';
+import { Button } from "@/components/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/Dialog";
+import { Input } from "@/components/ui/Input";
+import { TagEditor } from "@/components/ui/TagEditor";
+import { getActiveSources, getDefaultSource } from "@/services/sourceService";
+import { ReadingStatus } from "@/types/manga.types";
+import { MangaSource } from "@/types/source.types";
+import { isValidMangaSlug } from "@/utils/validators";
+import { Loader2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 interface AddMangaDialogProps {
   open: boolean;
@@ -23,23 +28,23 @@ interface AddMangaDialogProps {
   }) => Promise<void>;
 }
 
-const DEFAULT_BASE_URL = 'https://manga.pics';
+const DEFAULT_BASE_URL = "https://manga.pics";
 
 export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
-  const [mangaSlug, setMangaSlug] = useState('');
+  const [mangaSlug, setMangaSlug] = useState("");
   const [autoDiscover, setAutoDiscover] = useState(true);
-  const [status, setStatus] = useState<ReadingStatus>('plan');
+  const [status, setStatus] = useState<ReadingStatus>("plan");
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [sources, setSources] = useState<MangaSource[]>([]);
-  const [selectedSourceId, setSelectedSourceId] = useState<string>('');
+  const [selectedSourceId, setSelectedSourceId] = useState<string>("");
 
   useEffect(() => {
     if (open) {
       const activeSources = getActiveSources();
       setSources(activeSources);
-      
+
       // Set default source
       const defaultSource = getDefaultSource();
       if (defaultSource) {
@@ -50,18 +55,20 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!mangaSlug) {
-      setError('Please enter a manga name');
+      setError("Please enter a manga name");
       return;
     }
 
     // Convert spaces to dashes and clean the slug
-    const cleanedSlug = mangaSlug.trim().toLowerCase().replace(/\s+/g, '-');
+    const cleanedSlug = mangaSlug.trim().toLowerCase().replace(/\s+/g, "-");
 
     if (!isValidMangaSlug(cleanedSlug)) {
-      setError('Invalid manga slug. Use only lowercase letters, numbers, and hyphens (e.g., my-gift-lvl-9999-unlimited-gacha)');
+      setError(
+        "Invalid manga slug. Use only lowercase letters, numbers, and hyphens (e.g., my-gift-lvl-9999-unlimited-gacha)"
+      );
       return;
     }
 
@@ -70,11 +77,11 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
     try {
       // Auto-generate title from slug (capitalize and replace hyphens with spaces)
       const generatedTitle = cleanedSlug
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
 
-      const selectedSource = sources.find(s => s.id === selectedSourceId);
+      const selectedSource = sources.find((s) => s.id === selectedSourceId);
       const baseUrl = selectedSource?.baseUrl || DEFAULT_BASE_URL;
 
       await onAdd({
@@ -84,17 +91,17 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
         sourceId: selectedSourceId || undefined,
         autoDiscover,
         status,
-        tags
+        tags,
       });
 
       // Reset form
-      setMangaSlug('');
+      setMangaSlug("");
       setAutoDiscover(true);
-      setStatus('plan');
+      setStatus("plan");
       setTags([]);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add manga');
+      setError(err instanceof Error ? err.message : "Failed to add manga");
     } finally {
       setLoading(false);
     }
@@ -109,9 +116,7 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Manga Name
-            </label>
+            <label className="block text-sm font-medium mb-2">Manga Name</label>
             <Input
               placeholder="One Piece"
               value={mangaSlug}
@@ -119,14 +124,13 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
               disabled={loading}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Enter the manga name (spaces will be converted to dashes automatically)
+              Enter the manga name (spaces will be converted to dashes
+              automatically)
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Source
-            </label>
+            <label className="block text-sm font-medium mb-2">Source</label>
             <select
               value={selectedSourceId}
               onChange={(e) => setSelectedSourceId(e.target.value)}
@@ -134,7 +138,7 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
               className="w-full rounded border-2 border-stone-600 bg-[hsl(var(--parchment))] px-3 py-2 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-amber-500"
               aria-label="Manga Source"
             >
-              {sources.map(source => (
+              {sources.map((source) => (
                 <option key={source.id} value={source.id}>
                   {source.name} - {source.baseUrl}
                 </option>
@@ -147,7 +151,10 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="readingStatus" className="block text-sm font-medium mb-2">
+              <label
+                htmlFor="readingStatus"
+                className="block text-sm font-medium mb-2"
+              >
                 Reading Status
               </label>
               <select
@@ -176,7 +183,10 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
                   disabled={loading}
                   className="h-4 w-4 accent-amber-700"
                 />
-                <label htmlFor="autoDiscover" className="text-sm text-stone-700">
+                <label
+                  htmlFor="autoDiscover"
+                  className="text-sm text-stone-700"
+                >
                   Automatically discover all chapters (may take a while)
                 </label>
               </div>
@@ -216,7 +226,7 @@ export function AddMangaDialog({ open, onClose, onAdd }: AddMangaDialogProps) {
                   Adding...
                 </>
               ) : (
-                'Add Manga'
+                "Add Manga"
               )}
             </Button>
           </div>

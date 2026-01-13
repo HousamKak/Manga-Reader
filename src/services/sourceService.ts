@@ -1,6 +1,6 @@
-import { MangaSource, PREDEFINED_SOURCES } from '@/types/source.types';
+import { MangaSource, PREDEFINED_SOURCES } from "@/types/source.types";
 
-const STORAGE_KEY = 'manga-reader-sources';
+const STORAGE_KEY = "manga-reader-sources";
 
 /**
  * Generate a unique ID for a source
@@ -19,14 +19,14 @@ export function loadSources(): MangaSource[] {
       return JSON.parse(stored);
     }
   } catch (error) {
-    console.error('Failed to load sources:', error);
+    console.error("Failed to load sources:", error);
   }
 
   // Initialize with predefined sources
-  const initialSources: MangaSource[] = PREDEFINED_SOURCES.map(source => ({
+  const initialSources: MangaSource[] = PREDEFINED_SOURCES.map((source) => ({
     ...source,
     id: generateSourceId(),
-    dateAdded: Date.now()
+    dateAdded: Date.now(),
   }));
 
   saveSources(initialSources);
@@ -40,7 +40,7 @@ export function saveSources(sources: MangaSource[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sources));
   } catch (error) {
-    console.error('Failed to save sources:', error);
+    console.error("Failed to save sources:", error);
   }
 }
 
@@ -49,47 +49,52 @@ export function saveSources(sources: MangaSource[]): void {
  */
 export function getSourceById(sourceId: string): MangaSource | null {
   const sources = loadSources();
-  return sources.find(s => s.id === sourceId) || null;
+  return sources.find((s) => s.id === sourceId) || null;
 }
 
 /**
  * Get all active sources
  */
 export function getActiveSources(): MangaSource[] {
-  return loadSources().filter(s => s.isActive);
+  return loadSources().filter((s) => s.isActive);
 }
 
 /**
  * Add a new source
  */
-export function addSource(sourceData: Omit<MangaSource, 'id' | 'dateAdded'>): MangaSource {
+export function addSource(
+  sourceData: Omit<MangaSource, "id" | "dateAdded">
+): MangaSource {
   const sources = loadSources();
-  
+
   const newSource: MangaSource = {
     ...sourceData,
     id: generateSourceId(),
     dateAdded: Date.now(),
-    isCustom: true
+    isCustom: true,
   };
 
   sources.push(newSource);
   saveSources(sources);
-  
+
   return newSource;
 }
 
 /**
  * Update an existing source
  */
-export function updateSource(sourceId: string, updates: Partial<Omit<MangaSource, 'id' | 'dateAdded'>>): boolean {
+export function updateSource(
+  sourceId: string,
+  updates: Partial<Omit<MangaSource, "id" | "dateAdded">>
+): boolean {
   const sources = loadSources();
-  const index = sources.findIndex(s => s.id === sourceId);
-  
+  const index = sources.findIndex((s) => s.id === sourceId);
+
   if (index === -1) return false;
 
   sources[index] = {
     ...sources[index],
-    ...updates
+    ...updates,
   };
 
   saveSources(sources);
@@ -101,15 +106,15 @@ export function updateSource(sourceId: string, updates: Partial<Omit<MangaSource
  */
 export function deleteSource(sourceId: string): boolean {
   const sources = loadSources();
-  const source = sources.find(s => s.id === sourceId);
-  
+  const source = sources.find((s) => s.id === sourceId);
+
   if (!source || !source.isCustom) {
     return false;
   }
 
-  const filteredSources = sources.filter(s => s.id !== sourceId);
+  const filteredSources = sources.filter((s) => s.id !== sourceId);
   saveSources(filteredSources);
-  
+
   return true;
 }
 
@@ -118,13 +123,13 @@ export function deleteSource(sourceId: string): boolean {
  */
 export function toggleSourceActive(sourceId: string): boolean {
   const sources = loadSources();
-  const source = sources.find(s => s.id === sourceId);
-  
+  const source = sources.find((s) => s.id === sourceId);
+
   if (!source) return false;
 
   source.isActive = !source.isActive;
   saveSources(sources);
-  
+
   return true;
 }
 

@@ -1,4 +1,4 @@
-export type ReadingStatus = 'plan' | 'reading' | 'done';
+export type ReadingStatus = "plan" | "reading" | "done";
 
 export interface Manga {
   id: string;

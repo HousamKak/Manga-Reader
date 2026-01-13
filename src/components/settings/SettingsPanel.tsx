@@ -1,9 +1,14 @@
-import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { Button } from '@/components/ui/Button';
-import { AppSettings } from '@/types/settings.types';
-import { clearCache, getCacheSize } from '@/services/storageService';
-import { SourceManager } from './SourceManager';
+import { Button } from "@/components/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/Dialog";
+import { clearCache, getCacheSize } from "@/services/storageService";
+import { AppSettings } from "@/types/settings.types";
+import React from "react";
+import { SourceManager } from "./SourceManager";
 
 interface SettingsPanelProps {
   open: boolean;
@@ -16,7 +21,7 @@ export function SettingsPanel({
   open,
   settings,
   onClose,
-  onUpdate
+  onUpdate,
 }: SettingsPanelProps) {
   const [cacheSize, setCacheSize] = React.useState<number>(0);
 
@@ -32,11 +37,11 @@ export function SettingsPanel({
   };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   return (
@@ -90,7 +95,9 @@ export function SettingsPanel({
                 </label>
                 <select
                   value={settings.imageFit}
-                  onChange={(e) => onUpdate({ imageFit: e.target.value as any })}
+                  onChange={(e) =>
+                    onUpdate({ imageFit: e.target.value as any })
+                  }
                   className="w-full px-3 py-2 border rounded-md"
                 >
                   <option value="width">Fit to Width</option>
@@ -287,7 +294,11 @@ export function SettingsPanel({
               <p className="text-sm text-muted-foreground">
                 Current cache size: {formatBytes(cacheSize)}
               </p>
-              <Button variant="destructive" size="sm" onClick={handleClearCache}>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleClearCache}
+              >
                 Clear Cache
               </Button>
             </div>
