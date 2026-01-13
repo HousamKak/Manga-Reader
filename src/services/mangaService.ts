@@ -1,7 +1,6 @@
 import { buildMangaPageUrl, buildSourcePageUrl, parseMangaUrl } from '@/utils/urlBuilder';
 import { checkImageExists } from '@/utils/imageLoader';
 import { MangaUrlPattern, DiscoveryResult, Chapter, Page } from '@/types/manga.types';
-import { MangaSource } from '@/types/source.types';
 import { getSourceById } from './sourceService';
 
 const PAGE_START_CANDIDATES = [0, 1, 2];
@@ -222,10 +221,7 @@ export async function discoverPageCount(
 /**
  * Discovers all chapters for a manga with progress callback
  * Only discovers chapter count, not page details (pages discovered on-demand)
- */
-export async function discoverAllChapters(
-  baseUrl: string,
-   Supports both legacy baseUrl and new sourceId
+ * Supports both legacy baseUrl and new sourceId
  */
 export async function discoverAllChapters(
   baseUrl: string,
@@ -234,7 +230,10 @@ export async function discoverAllChapters(
   onProgress?: (current: number, total: number) => void,
   sourceId?: string
 ): Promise<Chapter[]> {
-  const chapterResult = await discoverChapterCount(baseUrl, mangaSlug, 4096, sourceIdrs');
+  const chapterResult = await discoverChapterCount(baseUrl, mangaSlug, 4096, sourceId);
+
+  if (!chapterResult.success || !chapterResult.totalChapters) {
+    throw new Error(chapterResult.error || 'Failed to discover chapters');
   }
 
   const chapters: Chapter[] = [];
@@ -259,7 +258,9 @@ export async function discoverAllChapters(
   return chapters;
 }
 
-/* Supports both legacy baseUrl and new sourceId
+/**
+ * Discovers pages for a specific chapter on-demand
+ * Supports both legacy baseUrl and new sourceId
  */
 export async function discoverChapterPages(
   baseUrl: string,
@@ -288,9 +289,7 @@ export async function discoverChapterPages(
       pageNumber: j,
       imageUrl: source
         ? buildSourcePageUrl({ source, mangaSlug, chapterNumber, pageNumber: actualPageNumber })
-        : buildMangaPageUrl({ baseUrl, mangaSlug, chapterNumber, pageNumber: actualPageNumber   chapterNumber,
-        pageNumber: actualPageNumber
-      }),
+        : buildMangaPageUrl({ baseUrl, mangaSlug, chapterNumber, pageNumber: actualPageNumber }),
       isLoaded: false,
       isCached: false
     });
