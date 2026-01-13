@@ -22,15 +22,9 @@ export function loadSources(): MangaSource[] {
     console.error("Failed to load sources:", error);
   }
 
-  // Initialize with predefined sources
-  const initialSources: MangaSource[] = PREDEFINED_SOURCES.map((source) => ({
-    ...source,
-    id: generateSourceId(),
-    dateAdded: Date.now(),
-  }));
-
-  saveSources(initialSources);
-  return initialSources;
+  // Initialize with predefined sources (they already have stable IDs)
+  saveSources(PREDEFINED_SOURCES);
+  return PREDEFINED_SOURCES;
 }
 
 /**
@@ -49,7 +43,10 @@ export function saveSources(sources: MangaSource[]): void {
  */
 export function getSourceById(sourceId: string): MangaSource | null {
   const sources = loadSources();
-  return sources.find((s) => s.id === sourceId) || null;
+  const found = sources.find((s) => s.id === sourceId) || null;
+  console.log(`[SourceService] getSourceById("${sourceId}"):`, found ? { id: found.id, name: found.name, baseUrl: found.baseUrl } : 'NOT FOUND');
+  console.log(`[SourceService] Available source IDs:`, sources.map(s => s.id));
+  return found;
 }
 
 /**

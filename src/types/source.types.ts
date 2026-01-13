@@ -22,8 +22,10 @@ export interface SourceUrlPattern {
 }
 
 // Predefined sources that come with the app
-export const PREDEFINED_SOURCES: Omit<MangaSource, "id" | "dateAdded">[] = [
+// Note: IDs are deterministic based on source name for stability
+export const PREDEFINED_SOURCES: MangaSource[] = [
   {
+    id: "source-manga-pics",
     name: "Manga Pics",
     baseUrl: "https://manga.pics",
     patternType: "standard",
@@ -32,8 +34,10 @@ export const PREDEFINED_SOURCES: Omit<MangaSource, "id" | "dateAdded">[] = [
     description: "Default manga source with standard URL pattern",
     isActive: true,
     isCustom: false,
+    dateAdded: 0,
   },
   {
+    id: "source-black-clover-cdn",
     name: "Black Clover CDN",
     baseUrl: "https://cdn.black-clover.org",
     patternType: "prefixed",
@@ -43,8 +47,10 @@ export const PREDEFINED_SOURCES: Omit<MangaSource, "id" | "dateAdded">[] = [
     description: "Black Clover CDN with WebP images",
     isActive: true,
     isCustom: false,
+    dateAdded: 0,
   },
   {
+    id: "source-raven-scans",
     name: "Raven Scans",
     baseUrl: "https://ravenscans.com/manga",
     patternType: "standard",
@@ -53,5 +59,6 @@ export const PREDEFINED_SOURCES: Omit<MangaSource, "id" | "dateAdded">[] = [
     description: "Raven Scans manga source",
     isActive: true,
     isCustom: false,
+    dateAdded: 0,
   },
 ];
