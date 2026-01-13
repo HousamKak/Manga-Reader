@@ -197,7 +197,7 @@ export const ImageViewer = memo(function ImageViewer({
             onError={handleError}
             draggable={false}
             decoding="async"
-            fetchpriority="high"
+            fetchPriority="high"
             style={{ margin: "0 auto" }}
           />
         </div>
