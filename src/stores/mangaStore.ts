@@ -22,6 +22,8 @@ const normalizeManga = (manga: Manga): Manga => {
   };
 };
 
+const mangaUpdateQueue = new Map<string, Promise<void>>();
+
 interface MangaStore {
   manga: Manga[];
   currentManga: Manga | null;
@@ -55,12 +57,43 @@ interface MangaStore {
   setCurrentManga: (manga: Manga | null) => void;
 }
 
-export const useMangaStore = create<MangaStore>((set, get) => ({
-  manga: [],
-  currentManga: null,
-  isLoading: false,
-  error: null,
-  discoveryProgress: null,
+export const useMangaStore = create<MangaStore>((set, get) => {
+  const enqueueMangaUpdate = async (
+    mangaId: string,
+    updater: (current: Manga) => Manga | null
+  ): Promise<void> => {
+    const previous = mangaUpdateQueue.get(mangaId) ?? Promise.resolve();
+    const next = previous
+      .catch(() => {
+        // Keep the queue alive even if a previous update failed.
+      })
+      .then(async () => {
+        const current = await getManga(mangaId);
+        if (!current) return;
+
+        const updated = updater(current);
+        if (!updated) return;
+
+        await saveManga(updated);
+
+        const allManga = await getAllManga();
+        set({ manga: allManga.map(normalizeManga) });
+
+        if (get().currentManga?.id === mangaId) {
+          set({ currentManga: normalizeManga(updated) });
+        }
+      });
+
+    mangaUpdateQueue.set(mangaId, next.catch(() => {}));
+    await next;
+  };
+
+  return {
+    manga: [],
+    currentManga: null,
+    isLoading: false,
+    error: null,
+    discoveryProgress: null,
 
   loadAllManga: async () => {
     set({ isLoading: true, error: null });
@@ -122,21 +155,11 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
     try {
       const manga = await getManga(id);
       if (!manga) throw new Error("Manga not found");
-
-      const updatedManga: Manga = {
-        ...manga,
+      await enqueueMangaUpdate(id, (current) => ({
+        ...current,
         ...updates,
         dateUpdated: Date.now(),
-      };
-
-      await saveManga(updatedManga);
-
-      const allManga = await getAllManga();
-      set({ manga: allManga.map(normalizeManga) });
-
-      if (get().currentManga?.id === id) {
-        set({ currentManga: normalizeManga(updatedManga) });
-      }
+      }));
     } catch (error) {
       set({
         error:
@@ -220,61 +243,68 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
       if (!manga) return;
 
       const chapterId = `${mangaId}-ch${chapterNumber}`;
+      const ensureChapter = async (): Promise<Chapter | null> => {
+        const existing =
+          manga?.chapters.find((c) => c.chapterNumber === chapterNumber) ?? null;
+        if (existing) return existing;
 
-      const ensureChapterIndex = async (): Promise<number> => {
-        let index =
-          manga?.chapters.findIndex((c) => c.chapterNumber === chapterNumber) ??
-          -1;
+        const newChapter: Chapter = {
+          id: chapterId,
+          mangaId,
+          chapterNumber,
+          totalPages: undefined,
+          pages: [],
+          isDiscovered: false,
+          progress: 0,
+        };
 
-        if (index === -1 && manga) {
-          const newChapter: Chapter = {
-            id: chapterId,
-            mangaId,
-            chapterNumber,
-            totalPages: undefined,
-            pages: [],
-            isDiscovered: false,
-            progress: 0,
-          };
+        await enqueueMangaUpdate(mangaId, (current) => {
+          if (
+            current.chapters.some((c) => c.chapterNumber === chapterNumber)
+          ) {
+            return current;
+          }
 
-          const chapters = [...manga.chapters, newChapter].sort(
+          const chapters = [...current.chapters, newChapter].sort(
             (a, b) => a.chapterNumber - b.chapterNumber
           );
 
-          await get().updateManga(mangaId, { chapters });
-          manga = await refreshManga();
-          index =
-            manga?.chapters.findIndex(
-              (c) => c.chapterNumber === chapterNumber
-            ) ?? -1;
-        }
+          return { ...current, chapters, dateUpdated: Date.now() };
+        });
 
-        return index;
+        manga = await refreshManga();
+        return (
+          manga?.chapters.find((c) => c.chapterNumber === chapterNumber) ?? null
+        );
       };
 
-      let chapterIndex = await ensureChapterIndex();
-      if (!manga || chapterIndex === -1) return;
-
-      let chapter = manga.chapters[chapterIndex];
+      let chapter = await ensureChapter();
+      if (!chapter) return;
 
       if (force) {
-        const chapters = [...manga.chapters];
-        chapters[chapterIndex] = {
-          ...chapter,
-          isDiscovered: false,
-          totalPages: undefined,
-          pages: [],
-        };
+        await enqueueMangaUpdate(mangaId, (current) => {
+          const idx = current.chapters.findIndex(
+            (c) => c.chapterNumber === chapterNumber
+          );
+          if (idx === -1) return current;
 
-        await get().updateManga(mangaId, { chapters });
+          const chapters = [...current.chapters];
+          chapters[idx] = {
+            ...chapters[idx],
+            isDiscovered: false,
+            totalPages: undefined,
+            firstPageNumber: undefined,
+            pages: [],
+          };
+
+          return { ...current, chapters, dateUpdated: Date.now() };
+        });
+
         manga = await refreshManga();
         if (!manga) return;
-
-        chapterIndex = manga.chapters.findIndex(
-          (c) => c.chapterNumber === chapterNumber
-        );
-        if (chapterIndex === -1) return;
-        chapter = manga.chapters[chapterIndex];
+        chapter =
+          manga.chapters.find((c) => c.chapterNumber === chapterNumber) ?? null;
+        if (!chapter) return;
       }
 
       if (!force && chapter.isDiscovered && chapter.pages.length > 0) {
@@ -284,70 +314,69 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
       const INITIAL_PLACEHOLDERS = 15;
 
       if (chapter.pages.length === 0) {
-        const source = manga.sourceId ? getSourceById(manga.sourceId) : null;
+        await enqueueMangaUpdate(mangaId, (current) => {
+          const idx = current.chapters.findIndex(
+            (c) => c.chapterNumber === chapterNumber
+          );
+          if (idx === -1) return current;
 
-        const firstPageUrl = source
-          ? buildSourcePageUrl({
-              source,
-              mangaSlug: manga.urlSlug,
-              chapterNumber,
-              pageNumber: 0,
-            })
-          : buildMangaPageUrl({
-              baseUrl: manga.baseUrl,
-              mangaSlug: manga.urlSlug,
-              chapterNumber,
-              pageNumber: 0,
-            });
+          const currentChapter = current.chapters[idx];
+          if (currentChapter.pages.length > 0) return current;
 
-        const placeholderPages = Array.from(
-          { length: INITIAL_PLACEHOLDERS },
-          (_, index) => {
-            const imageUrl =
-              index === 0
-                ? firstPageUrl
-                : source
-                ? buildSourcePageUrl({
-                    source,
-                    mangaSlug: manga!.urlSlug,
-                    chapterNumber,
-                    pageNumber: index,
-                  })
-                : buildMangaPageUrl({
-                    baseUrl: manga!.baseUrl,
-                    mangaSlug: manga!.urlSlug,
-                    chapterNumber,
-                    pageNumber: index,
-                  });
+          const source = current.sourceId ? getSourceById(current.sourceId) : null;
+          const knownTotalPages = currentChapter.totalPages ?? 0;
+          const placeholderCount =
+            knownTotalPages > 0 ? knownTotalPages : INITIAL_PLACEHOLDERS;
+          const pageOffset = currentChapter.firstPageNumber ?? 0;
 
-            return {
-              id: `${chapterId}-p${index}`,
-              chapterId,
-              pageNumber: index,
-              imageUrl,
-              isLoaded: false,
-              isCached: false,
-            };
-          }
-        );
+          const buildImageUrl = (pageNumber: number) =>
+            source
+              ? buildSourcePageUrl({
+                  source,
+                  mangaSlug: current.urlSlug,
+                  chapterNumber,
+                  pageNumber,
+                })
+              : buildMangaPageUrl({
+                  baseUrl: current.baseUrl,
+                  mangaSlug: current.urlSlug,
+                  chapterNumber,
+                  pageNumber,
+                });
 
-        const chapters = [...manga.chapters];
-        chapters[chapterIndex] = {
-          ...chapter,
-          pages: placeholderPages,
-          totalPages: placeholderPages.length,
-          isDiscovered: false,
-        };
+          const placeholderPages = Array.from(
+            { length: placeholderCount },
+            (_, index) => {
+              const actualPageNumber = pageOffset + index;
 
-        await get().updateManga(mangaId, { chapters });
+              return {
+                id: `${chapterId}-p${index}`,
+                chapterId,
+                pageNumber: index,
+                imageUrl: buildImageUrl(actualPageNumber),
+                isLoaded: false,
+                isCached: false,
+              };
+            }
+          );
+
+          const chapters = [...current.chapters];
+          chapters[idx] = {
+            ...currentChapter,
+            pages: placeholderPages,
+            totalPages: currentChapter.totalPages ?? placeholderPages.length,
+            firstPageNumber: currentChapter.firstPageNumber,
+            isDiscovered: false,
+          };
+
+          return { ...current, chapters, dateUpdated: Date.now() };
+        });
+
         manga = await refreshManga();
         if (!manga) return;
-
-        chapterIndex = manga.chapters.findIndex(
-          (c) => c.chapterNumber === chapterNumber
-        );
-        if (chapterIndex === -1) return;
-        chapter = manga.chapters[chapterIndex];
+        chapter =
+          manga.chapters.find((c) => c.chapterNumber === chapterNumber) ?? null;
+        if (!chapter) return;
       }
 
       discoverChapterPages(
@@ -357,24 +386,24 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
         chapterNumber,
         manga.sourceId
       )
-        .then(async (pages) => {
-          const freshManga = await refreshManga();
-          if (!freshManga) return;
+        .then(async ({ pages, totalPages, firstPageNumber }) => {
+          await enqueueMangaUpdate(mangaId, (current) => {
+            const idx = current.chapters.findIndex(
+              (c) => c.chapterNumber === chapterNumber
+            );
+            if (idx === -1) return current;
 
-          const idx = freshManga.chapters.findIndex(
-            (c) => c.chapterNumber === chapterNumber
-          );
-          if (idx === -1) return;
+            const chapters = [...current.chapters];
+            chapters[idx] = {
+              ...chapters[idx],
+              pages,
+              totalPages,
+              firstPageNumber,
+              isDiscovered: true,
+            };
 
-          const updatedChapters = [...freshManga.chapters];
-          updatedChapters[idx] = {
-            ...updatedChapters[idx],
-            pages,
-            totalPages: pages.length,
-            isDiscovered: true,
-          };
-
-          await get().updateManga(mangaId, { chapters: updatedChapters });
+            return { ...current, chapters, dateUpdated: Date.now() };
+          });
         })
         .catch((err) =>
           console.error("Background page discovery failed:", err)
@@ -408,4 +437,5 @@ export const useMangaStore = create<MangaStore>((set, get) => ({
   setCurrentManga: (manga: Manga | null) => {
     set({ currentManga: manga ? normalizeManga(manga) : null });
   },
-}));
+  };
+});

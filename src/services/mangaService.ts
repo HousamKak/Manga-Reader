@@ -320,7 +320,11 @@ export async function discoverChapterPages(
   mangaId: string,
   chapterNumber: number,
   sourceId?: string
-): Promise<Page[]> {
+): Promise<{
+  pages: Page[];
+  totalPages: number;
+  firstPageNumber: number;
+}> {
   const source = sourceId ? getSourceById(sourceId) : null;
   const pageResult = await discoverPageCount(
     baseUrl,
@@ -335,10 +339,11 @@ export async function discoverChapterPages(
   }
 
   const pages: Page[] = [];
+  const totalPages = pageResult.totalPages;
   const firstPageNumber = pageResult.firstPageNumber ?? 0;
 
   // Pages are 0-indexed, so start from 0
-  for (let j = 0; j < pageResult.totalPages; j++) {
+  for (let j = 0; j < totalPages; j++) {
     const actualPageNumber = firstPageNumber + j;
 
     pages.push({
@@ -363,7 +368,7 @@ export async function discoverChapterPages(
     });
   }
 
-  return pages;
+  return { pages, totalPages, firstPageNumber };
 }
 
 /**

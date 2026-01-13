@@ -26,6 +26,7 @@ export interface Chapter {
   chapterNumber: number;
   title?: string;
   totalPages?: number;
+  firstPageNumber?: number;
   pages: Page[];
   isDiscovered: boolean; // Whether pages have been auto-discovered
   lastReadPage?: number;
